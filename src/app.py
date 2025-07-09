@@ -1,47 +1,11 @@
-from fastapi import FastAPI, Request
-from pydantic import BaseModel
-from typing import List, Dict, Any
+from fastapi import FastAPI
+from api.dialogue import router as dialogue_router
+from dotenv import load_dotenv
+import os
 
-app = FastAPI()
+load_dotenv()
+api_key = os.getenv("DEEPSEEK_API_KEY")
 
-class Params(BaseModel):
-    world: Dict[str, Any]
-    character: Dict[str, Any]
-    npc: List[Dict[str, Any]]
+app = FastAPI(title="Screenwriter Dialogue API")
+app.include_router(dialogue_router, prefix="/api")
 
-
-class Dialogue(BaseModel):
-    id: int
-    info: str
-    line: str
-
-class DialogueData(BaseModel):
-    id: int
-    line: str
-    to: Dialogue
-
-class DialogueResponse(BaseModel):
-    id: int
-    name: str
-    data: List[DialogueData]
-
-@app.post("/generate")
-def generate_dialogue(params: Params):
-
-    return [
-        {
-            "id": 1,
-            "name": "name npc",
-            "data": [
-                {
-                    "id": 1,
-                    "line": "Phrase",
-                    "to": {
-                        "id": 2,
-                        "info": "Info something",
-                        "line": "Phrase about important"
-                    }
-                }
-            ]
-        }
-    ]
