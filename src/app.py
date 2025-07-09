@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api.dialogue import router as dialogue_router
+from src.llm.api.dialogue import router as dialogue_router
 from dotenv import load_dotenv
 import os
 
