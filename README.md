@@ -84,4 +84,4 @@ screenwriter-backend/
 
 ## 🗓️ Прогресс разработки
 
-Смотри [progress/PROGRESS.md](progress/PROGRESS.md)
+Смотри [progress/PROGRESS.md](progress/09_july.md)
