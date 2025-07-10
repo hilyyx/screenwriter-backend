@@ -7,4 +7,5 @@ router = APIRouter()
 @router.post("/generate")
 def generate(params: Params):
     result = generate_dialogue_from_params(params.dict())
+    print(10)
     return result
