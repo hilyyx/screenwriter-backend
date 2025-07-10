@@ -23,8 +23,8 @@ def generate_dialogue_from_params(params: dict):
         {"Тип": "Получение предмета", "Объект": "Ключ-карта от секретного хранилища", "Условие": "Предоставить исторические данные"}
     ]
 
-    with open("resources/prompt.txt", encoding='utf-8', mode="r") as prompt:
-        prompt = Template(prompt.read()).safe_substitute(
+    with open("resources/prompt_structure.txt", encoding='utf-8', mode="r") as prompt_structure:
+        prompt_structure = Template(prompt_structure.read()).safe_substitute(
             json_structure=json_structure,
             NPC_name=npc["name"],
             NPC_goal=npc["goal"],
@@ -47,11 +47,11 @@ def generate_dialogue_from_params(params: dict):
             mn_depth=15,
             goals=goals_for_prompt)
     client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
-    response = client.chat.completions.create(
+    structure_response = client.chat.completions.create(
         model=model_type,
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt},
+            {"role": "user", "content": prompt_structure},
         ],
         stream=False,
         #max_tokens=20000,
@@ -62,13 +62,13 @@ def generate_dialogue_from_params(params: dict):
         }
     )
 
-    parsed = json.loads(response.choices[0].message.content)
+    parsed = json.loads(structure_response.choices[0].message.content)
 
     dialog_graph = nx.DiGraph()
     for node in parsed['data']:
         dialog_graph.add_node(
             node["id"],
-            tematic=node["info"]
+            info=node["info"]
         )
         for child in node['to']:
             dialog_graph.add_edge(node["id"], child["id"])
@@ -87,19 +87,19 @@ def generate_dialogue_from_params(params: dict):
             for ind in range(0, len(path)):
                 node = path[ind]
                 if ind < len(path) - 1:
-                    dialog_chain += f'**NPC**: {dialog_graph.nodes[node]["tematic"]}\n'
+                    dialog_chain += f'**NPC**: {dialog_graph.nodes[node]["info"]}\n'
                 if ind:
-                    dialog_chain += f'**Игрок**: {dialog_graph.edges[lst_node, node]["replic"]}\n'
+                    dialog_chain += f'**Игрок**: {dialog_graph.edges[lst_node, node]["line"]}\n'
                 lst_node = node
             prev_chains.append(dialog_chain)
         for next_node in next_nodes:
-            next_replics.append(dialog_graph.nodes[next_node]["tematic"])
+            next_replics.append(dialog_graph.nodes[next_node]["info"])
             if next_node not in q:
                 q.append(next_node)
-        with open("resources/prompt_nodes_content.txt", encoding='utf-8', mode="r") as prompt:
-            prompt_nodes_content = Template(prompt.read()).safe_substitute(
+        with open("resources/prompt_nodes_content.txt", encoding='utf-8', mode="r") as prompt_nodes_content:
+            prompt_nodes_content = Template(prompt_nodes_content.read()).safe_substitute(
                 chain="\n = = = = \n".join(prev_chains),
-                tematic=dialog_graph.nodes[t]["tematic"],
+                tematic=dialog_graph.nodes[t]["info"],
                 world_settings=params["world_settings"],
                 name=npc["name"],
                 talk_style=npc["talk_style"],
@@ -115,9 +115,9 @@ def generate_dialogue_from_params(params: dict):
             ],
             stream=False
         )
-        dialog_graph.nodes[t]["replic"] = response.choices[0].message.content
+        dialog_graph.nodes[t]["line"] = response.choices[0].message.content
         for i in range(0, len(prev_chains)):
-            prev_chains[i] += f'**NPC**: {dialog_graph.nodes[t]["replic"]}\n'
+            prev_chains[i] += f'**NPC**: {dialog_graph.nodes[t]["line"]}\n'
         with open("resources/prompt_edges_content.txt", encoding='utf-8', mode="r") as prompt:
             prompt_edges_content = Template(prompt.read()).safe_substitute(
                 chain="\n = = = = \n".join(prev_chains),
@@ -141,9 +141,9 @@ def generate_dialogue_from_params(params: dict):
                 'type': 'json_object'
             }
         )
-        answers = json.loads(response.choices[0].message.content)["replics"]
+        answers = json.loads(response.choices[0].message.content)["lines"]
         for i in range(0, len(next_replics)):
-            dialog_graph.edges[t, next_nodes[i]]["replic"] = answers[i]
+            dialog_graph.edges[t, next_nodes[i]]["line"] = answers[i]
 
     graph = {"data": []}
     for node in list(dialog_graph.nodes):
