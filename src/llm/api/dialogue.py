@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.models.schemas import Params, DialogueResponse
+from lib.models import Params, DialogueResponse
 from lib.llm.generator import generate_dialogue_from_params
 
 router = APIRouter()
