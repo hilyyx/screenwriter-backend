@@ -4,7 +4,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from collections import deque
 
-from lib.llm.settings import json_node_structure, json_structure, system_prompt
+from lib.llm.settings import LLMSettings
 
 import networkx as nx
 import os
@@ -22,6 +22,7 @@ class DialogGenerator:
         self.npc = self.params["npc"]
         self.hero = self.params["npc"]
         self.goals = self.params["goals"]
+        self.llm_settings = LLMSettings()
 
     def generate_structure(self):
 
@@ -30,7 +31,7 @@ class DialogGenerator:
 
         with open("resources/prompt_structure.txt", encoding='utf-8', mode="r") as prompt_structure:
             prompt_structure = Template(prompt_structure.read()).safe_substitute(
-                json_structure=json_structure,
+                json_structure=self.llm_settings.get_structure(),
                 NPC_name=self.npc["name"],
                 NPC_goal=self.npc["goal"],
                 NPC_talk_style=self.npc["talk_style"],
@@ -44,7 +45,7 @@ class DialogGenerator:
                 NPC_to_hero_relation=self.params["NPC_to_hero_relation"],
                 hero_to_NPC_relation=self.params["hero_to_NPC_relation"],
                 world_settings=self.params["world_settings"],
-                json_node_structure=json_node_structure,
+                json_node_structure=self.llm_settings.get_node_structure(),
                 mx_answers_cnt=5,
                 mn_answers_cnt=2,
                 mx_plot_branches_cnt=5,
@@ -55,7 +56,7 @@ class DialogGenerator:
         structure_response = self.client.chat.completions.create(
             model=self.model_type,
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": self.llm_settings.get_system_prompt()},
                 {"role": "user", "content": prompt_structure},
             ],
             stream=False,
@@ -117,7 +118,7 @@ class DialogGenerator:
             response = self.client.chat.completions.create(
                 model=self.model_type,
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": self.llm_settings.get_system_prompt()},
                     {"role": "user", "content": prompt_nodes_content},
                 ],
                 stream=False
@@ -140,7 +141,7 @@ class DialogGenerator:
             response = self.client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": self.llm_settings.get_system_prompt()},
                     {"role": "user", "content": prompt_edges_content},
                 ],
                 stream=False,
