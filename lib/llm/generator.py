@@ -23,6 +23,7 @@ class DialogGenerator:
         self.hero = self.params["npc"]
         self.goals = self.params["goals"]
         self.llm_settings = LLMSettings()
+        self.dialog_graph = None
 
     def generate_structure(self):
 
@@ -78,8 +79,11 @@ class DialogGenerator:
             )
             for child in node['to']:
                 dialog_graph.add_edge(node["id"], child["id"])
+        self.dialog_graph = dialog_graph
         return dialog_graph
-    def generate_dialogue(self, dialog_graph):
+
+    def generate_dialogue(self):
+        dialog_graph = self.dialog_graph
         q = deque()
         start_node = list(dialog_graph.nodes)[0]
         q.append(start_node)
