@@ -162,6 +162,7 @@ class DialogGenerator:
             graph["data"].append(dialog_graph.nodes[node])
             graph["data"][-1]["id"] = node
             graph["data"][-1]["to"] = []
+            graph["data"][-1]["meta"] = {}
             for next_node in list(dialog_graph.adj[node].keys()):
                 graph["data"][-1]["to"].append(dialog_graph.edges[(node, next_node)])
                 graph["data"][-1]["to"][-1]["id"] = next_node
