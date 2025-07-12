@@ -167,4 +167,3 @@ class DialogGenerator:
                 graph["data"][-1]["to"][-1]["id"] = next_node
 
         return graph
-

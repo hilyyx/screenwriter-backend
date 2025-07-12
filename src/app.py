@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.llm.api.dialogue import router as dialogue_router
+from src.llm.api.dialogue_endpoint import router as dialogue_router
 
 
 app = FastAPI(title="Screenwriter Dialogue API")
