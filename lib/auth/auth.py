@@ -1,9 +1,23 @@
+import bcrypt
+from db.database import Database
+
 class Auth:
     def __init__(self):
-        pass
+        self.db = Database()
 
-    def login(self):
-        pass
+    def register(self, mail, name, surname, password):
+        user = self.db.get_user_by_name(name)
+        if user:
+            return None, 'User created earlier'
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        user_id = self.db.create_user(mail, name, surname, password_hash)
+        if user_id:
+            return user_id, None
 
-    def register(self):
-        pass
+    def login(self, mail, password):
+        user = self.db.get_user_by_name(mail)
+        if not user:
+            return None, 'User not found'
+        password_hash = user['password_hash']
+        if bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
+            return user, None

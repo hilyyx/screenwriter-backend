@@ -40,3 +40,19 @@ class Params(BaseModel):
     mx_depth: int
     mn_depth: int
     goals: List[GoalParams]
+
+class UserRegisterRequest(BaseModel):
+    mail: str
+    name: str
+    surname: str
+    password: str
+
+class UserLoginRequest(BaseModel):
+    mail: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    mail: str
+    name: str
+    surname: str

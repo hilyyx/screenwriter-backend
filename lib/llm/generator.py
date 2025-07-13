@@ -15,7 +15,8 @@ class DialogGenerator:
     def __init__(self, params: dict):
         load_dotenv()
         self.api_key = os.getenv("DEEPSEEK_API_KEY")
-        self.model_type = os.getenv("MODEL_TYPE")
+        self.structure_model_type = os.getenv("MODEL_TYPE_STRUCTURE")
+        self.dialogue_model_type = os.getenv("MODEL_TYPE_DIALOGUE")
         self.client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
 
         self.params = params
@@ -55,7 +56,7 @@ class DialogGenerator:
                 goals=goals_for_prompt)
 
         structure_response = self.client.chat.completions.create(
-            model=self.model_type,
+            model=self.structure_model_type,
             messages=[
                 {"role": "system", "content": self.llm_settings.get_system_prompt()},
                 {"role": "user", "content": prompt_structure},
@@ -120,7 +121,7 @@ class DialogGenerator:
                     relation=self.params["NPC_to_hero_relation"]
                 )
             response = self.client.chat.completions.create(
-                model=self.model_type,
+                model=self.structure_model_type,
                 messages=[
                     {"role": "system", "content": self.llm_settings.get_system_prompt()},
                     {"role": "user", "content": prompt_nodes_content},
