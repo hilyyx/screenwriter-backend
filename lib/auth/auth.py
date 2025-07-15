@@ -1,11 +1,17 @@
 import bcrypt
 from db.database import Database
+from lib.auth.validator import validate_email, validate_password
 
 class Auth:
     def __init__(self):
         self.db = Database()
 
     def register(self, mail, name, surname, password):
+        try:
+            mail = validate_email(mail)
+            password = validate_password(password)
+        except ValueError:
+            return None, ValueError
         user = self.db.get_user_by_name(name)
         if user:
             return None, 'User created earlier'
@@ -15,6 +21,11 @@ class Auth:
             return user_id, None
 
     def login(self, mail, password):
+        try:
+            mail = validate_email(mail)
+            password = validate_password(password)
+        except ValueError:
+            return None, ValueError
         user = self.db.get_user_by_mail(mail)
         if not user:
             return None, 'User not found'

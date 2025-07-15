@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Dict, Any
 
 class GlobalParams(BaseModel):
@@ -48,7 +48,7 @@ class Params(BaseModel):
     goals: List[GoalParams]
 
 class UserRegisterRequest(BaseModel):
-    mail: str
+    mail: EmailStr
     name: str
     surname: str
     password: str

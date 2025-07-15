@@ -106,7 +106,7 @@ def generate(params: Params):
     }
   ]
 }
-    #a = dialogue_controller.generate(params)
-    print(b)
-    return b
+    a = dialogue_controller.generate(params)
+    print(a)
+    return a
 

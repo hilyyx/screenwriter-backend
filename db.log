@@ -200,3 +200,22 @@
 2025-07-15 15:20:26,411 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
 2025-07-15 15:47:45,491 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
 2025-07-15 15:47:59,284 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 16:55:06,286 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 16:56:12,090 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 16:59:51,525 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 17:11:19,615 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 17:13:41,537 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:14:12,870 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:14:23,366 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:14:31,559 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:14:42,077 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:14:51,260 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:15:02,810 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:15:10,190 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:15:23,934 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:15:31,752 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:15:43,308 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:15:53,973 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:16:03,950 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:16:16,599 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 17:16:26,887 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
