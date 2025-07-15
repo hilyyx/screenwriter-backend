@@ -80,6 +80,14 @@ class Database:
         except Exception as e:
             logging.error(f"Ошибка при удалении пользователя {user_id}: {e}")
 
+    def get_user_by_mail(self, mail):
+        try:
+            self.cursor.execute("SELECT * FROM users WHERE mail = %s;", (mail,))
+            user = self.cursor.fetchone()
+            logging.info(f"Получен пользователь с почтой: {mail}")
+            return user
+        except Exception as e:
+            logging.error(f"Ошибка при получении пользователя {mail}: {e}")
     # ---------- GAMES ----------
     def create_game(self, user_id, title, technology_level=None, magic=None):
         try:

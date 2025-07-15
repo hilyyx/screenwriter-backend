@@ -15,9 +15,11 @@ class Auth:
             return user_id, None
 
     def login(self, mail, password):
-        user = self.db.get_user_by_name(mail)
+        user = self.db.get_user_by_mail(mail)
         if not user:
             return None, 'User not found'
         password_hash = user['password_hash']
         if bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
             return user, None
+        else:
+            return user, "wrong password"

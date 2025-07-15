@@ -80,3 +80,123 @@
 2025-07-12 17:14:34,377 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
 2025-07-12 17:14:42,666 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
 2025-07-12 17:15:23,504 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 09:15:52,119 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 10:34:56,651 [INFO] Получен пользователь по имени: oleg
+2025-07-15 10:34:56,878 [INFO] Пользователь создан: 2 (oleg)
+2025-07-15 10:36:41,439 [INFO] Получен пользователь по имени: alex@gmail.com
+2025-07-15 11:10:15,668 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 11:29:42,423 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 11:41:26,255 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 11:42:13,761 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 11:42:31,596 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 11:50:36,395 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 11:51:16,599 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 12:35:53,909 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 12:36:04,007 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 422 Unprocessable Entity"
+2025-07-15 13:47:31,424 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 13:47:45,256 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:50:49,052 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 13:50:55,394 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:51:18,463 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:51:30,037 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:51:36,863 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:51:45,666 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:51:54,283 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:52:02,905 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:52:12,332 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:52:21,667 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:52:27,497 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:52:36,905 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 13:53:47,179 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 13:55:22,039 [INFO] Получен пользователь с почтой: alex@gmail.com
+2025-07-15 14:02:35,625 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 14:10:29,251 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 14:13:45,418 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 14:20:20,392 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 14:26:55,352 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 14:27:12,225 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:27:37,993 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:27:53,561 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:28:00,447 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:28:11,672 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:28:19,367 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:28:29,249 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:28:39,069 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:28:49,922 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:29:04,254 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:29:16,285 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:38:31,460 [INFO] Получен пользователь по имени: string
+2025-07-15 14:38:31,682 [INFO] Пользователь создан: 3 (string)
+2025-07-15 14:39:00,472 [INFO] Получен пользователь с почтой: string
+2025-07-15 14:39:13,482 [INFO] Получен пользователь с почтой: string
+2025-07-15 14:46:16,212 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:47:10,272 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:47:23,175 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:47:30,727 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:47:41,293 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:47:54,819 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:48:07,331 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:48:14,898 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:48:26,456 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:48:32,977 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:48:44,893 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:48:56,718 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:49:06,656 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:49:13,964 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:49:25,012 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:49:39,029 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:49:50,124 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:49:57,013 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:50:06,726 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:50:23,370 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:50:33,715 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:50:47,115 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:50:57,641 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:51:04,850 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:51:16,287 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 14:51:56,641 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 14:52:08,300 [INFO] Получен пользователь с почтой: string
+2025-07-15 15:00:26,050 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 15:00:32,264 [INFO] Получен пользователь с почтой: string
+2025-07-15 15:00:38,695 [INFO] Получен пользователь с почтой: string
+2025-07-15 15:09:38,312 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 15:10:02,847 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:10:43,073 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:10:55,770 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:11:03,414 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:11:15,794 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:11:29,949 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:11:43,789 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:11:52,334 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:12:04,849 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:12:18,186 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:12:30,719 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:12:42,169 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:12:55,936 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:13:05,670 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:13:19,254 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:13:33,833 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:13:46,811 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:14:01,830 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:14:12,985 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:15:37,115 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 15:15:48,664 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 15:16:06,455 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:16:32,213 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:16:48,333 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:16:55,381 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:17:28,425 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 15:18:33,952 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 15:18:43,916 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:19:08,858 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:19:18,976 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:19:25,397 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:19:35,928 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:19:43,431 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:19:50,570 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:20:01,357 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:20:12,654 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:20:16,938 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:20:26,411 [INFO] HTTP Request: POST https://api.deepseek.com/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 15:47:45,491 [INFO] Подключение к базе данных успешно: localhost:5432/postgres
+2025-07-15 15:47:59,284 [INFO] Подключение к базе данных успешно: localhost:5432/postgres

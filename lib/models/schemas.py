@@ -4,7 +4,6 @@ from typing import List, Dict, Any
 class GlobalParams(BaseModel):
     name: str
     profession: str
-    goal: str
     talk_style: str
     traits: str
     look: str
