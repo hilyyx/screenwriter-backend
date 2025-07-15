@@ -177,7 +177,8 @@ class DialogGenerator:
             print("--answers--")
             print(answers)
             for i in range(0, len(next_replics)):
-                dialog_graph.edges[t, next_nodes[i]]["line"] = answers[i]
+                for key in answers[i].keys():
+                    dialog_graph.edges[t, next_nodes[i]][key] = answers[i][key]
 
         graph = {"data": []}
         for node in list(dialog_graph.nodes):
