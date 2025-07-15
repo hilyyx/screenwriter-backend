@@ -16,7 +16,9 @@ class DialogGenerator:
         load_dotenv()
         self.api_key = os.getenv("DEEPSEEK_API_KEY")
         self.structure_model_type = os.getenv("MODEL_TYPE_STRUCTURE")
+        self.structure_model_max_tokens = int(os.getenv("STRUCTURE_MODEL_MAX_TOKENS", 8192))
         self.dialogue_model_type = os.getenv("MODEL_TYPE_DIALOGUE")
+        self.dialogue_model_max_tokens = int(os.getenv("DIALOGUE_MODEL_MAX_TOKENS", 8192))
         self.client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
 
         self.params = params
@@ -28,41 +30,49 @@ class DialogGenerator:
 
     def generate_structure(self):
 
-        goals_for_prompt = [{"Тип": "Получение предмета", "Объект": "Ключ-карта от секретного хранилища",
-                             "Условие": "Предоставить исторические данные"}]
 
         with open("resources/prompt_structure.txt", encoding='utf-8', mode="r") as prompt_structure:
             prompt_structure = Template(prompt_structure.read()).safe_substitute(
                 json_structure=self.llm_settings.get_structure(),
+                json_node_structure=self.llm_settings.get_node_structure(),
                 NPC_name=self.npc["name"],
                 NPC_goal=self.npc["goal"],
                 NPC_talk_style=self.npc["talk_style"],
                 NPC_profession=self.npc["profession"],
+                NPC_look=self.npc["look"],
                 NPC_traits=self.npc["traits"],
+                NPC_extra=self.npc["extra"],
                 hero_name=self.hero["name"],
                 hero_goal=self.hero["goal"],
                 hero_talk_style=self.hero["talk_style"],
                 hero_profession=self.hero["profession"],
+                hero_look=self.hero["look"],
+                hero_extra=self.hero["extra"],
                 hero_traits=self.hero["traits"],
                 NPC_to_hero_relation=self.params["NPC_to_hero_relation"],
                 hero_to_NPC_relation=self.params["hero_to_NPC_relation"],
                 world_settings=self.params["world_settings"],
-                json_node_structure=self.llm_settings.get_node_structure(),
-                mx_answers_cnt=5,
-                mn_answers_cnt=2,
-                mx_plot_branches_cnt=5,
-                mx_depth=15,
-                mn_depth=15,
-                goals=goals_for_prompt)
+                scene = self.params["scene"],
+                genre = self.params["genre"],
+                epoch = self.params["epoch"],
+                tonality = self.params["tonality"],
+                extra = self.params["extra"],
+                context = self.params["context"],
+                mx_answers_cnt=self.params["mx_answers_cnt"],
+                mn_answers_cnt=self.params["mn_answers_cnt"],
+                mx_depth=self.params["mx_depth"],
+                mn_depth=self.params["mn_depth"],
+                moods_list=self.llm_settings.get_moods(),
+                goals=self.goals)
 
         structure_response = self.client.chat.completions.create(
-            model=self.structure_model_type,
+            model=self.dialogue_model_type,
             messages=[
                 {"role": "system", "content": self.llm_settings.get_system_prompt()},
                 {"role": "user", "content": prompt_structure},
             ],
             stream=False,
-            # max_tokens=20000,
+            max_tokens=self.structure_model_max_tokens,
             temperature=0.6,
             top_p=0.95,
             response_format={
@@ -71,15 +81,14 @@ class DialogGenerator:
         )
 
         parsed = json.loads(structure_response.choices[0].message.content)
-
+        print(parsed)
         dialog_graph = nx.DiGraph()
         for node in parsed['data']:
-            dialog_graph.add_node(
-                node["id"],
-                info=node["info"]
-            )
+            # print(node)
+            dialog_graph.add_node(node["id"], **node)
             for child in node['to']:
-                dialog_graph.add_edge(node["id"], child["id"])
+                dialog_graph.add_edge(node["id"], child["id"], **child)
+
         self.dialog_graph = dialog_graph
         return dialog_graph
 
@@ -111,6 +120,7 @@ class DialogGenerator:
                     q.append(next_node)
             with open("resources/prompt_nodes_content.txt", encoding='utf-8', mode="r") as prompt_nodes_content:
                 prompt_nodes_content = Template(prompt_nodes_content.read()).safe_substitute(
+
                     chain="\n = = = = \n".join(prev_chains),
                     tematic=dialog_graph.nodes[t]["info"],
                     world_settings=self.params["world_settings"],
@@ -118,21 +128,27 @@ class DialogGenerator:
                     talk_style=self.npc["talk_style"],
                     profession=self.npc["profession"],
                     traits=self.npc["traits"],
+                    scene=self.params["scene"],
+                    extra=self.params["extra"],
+                    look=self.npc["look"],
+                    mood=dialog_graph.nodes[t]["mood"],
                     relation=self.params["NPC_to_hero_relation"]
                 )
             response = self.client.chat.completions.create(
-                model=self.structure_model_type,
+                model=self.dialogue_model_type,
                 messages=[
                     {"role": "system", "content": self.llm_settings.get_system_prompt()},
                     {"role": "user", "content": prompt_nodes_content},
                 ],
-                stream=False
+                stream=False,
+                max_tokens=self.structure_model_max_tokens
             )
             dialog_graph.nodes[t]["line"] = response.choices[0].message.content
             for i in range(0, len(prev_chains)):
                 prev_chains[i] += f'**NPC**: {dialog_graph.nodes[t]["line"]}\n'
             with open("resources/prompt_edges_content.txt", encoding='utf-8', mode="r") as prompt:
                 prompt_edges_content = Template(prompt.read()).safe_substitute(
+                    json_edge_structure=self.llm_settings.get_edge_structure(),
                     chain="\n = = = = \n".join(prev_chains),
                     tematics="\n = = = = \n".join(next_replics),
                     replic_cnt=len(next_replics),
@@ -141,6 +157,11 @@ class DialogGenerator:
                     talk_style=self.hero["talk_style"],
                     profession=self.hero["profession"],
                     traits=self.hero["traits"],
+                    look=self.hero["look"],
+                    hero_extra=self.hero["extra"],
+                    mood=dialog_graph.nodes[t]["mood"],
+                    extra=self.params["extra"],
+                    scene=self.params["scene"],
                     relation=self.params["hero_to_NPC_relation"]
                 )
             response = self.client.chat.completions.create(
@@ -155,6 +176,8 @@ class DialogGenerator:
                 }
             )
             answers = json.loads(response.choices[0].message.content)["lines"]
+            print("--answers--")
+            print(answers)
             for i in range(0, len(next_replics)):
                 dialog_graph.edges[t, next_nodes[i]]["line"] = answers[i]
 

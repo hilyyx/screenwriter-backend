@@ -17,5 +17,7 @@ dialogue_controller = DialogueController()
 
 @router.post("/generate")
 def generate(params: Params):
-    return dialogue_controller.generate(params)
+    a = dialogue_controller.generate(params)
+    print(a)
+    return a
 

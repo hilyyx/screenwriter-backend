@@ -7,6 +7,8 @@ class GlobalParams(BaseModel):
     goal: str
     talk_style: str
     traits: str
+    look: str
+    extra: str
 
 class GoalParams(BaseModel):
     type: str
@@ -36,9 +38,14 @@ class Params(BaseModel):
     hero_to_NPC_relation: str
     mx_answers_cnt: int
     mn_answers_cnt: int
-    mx_plot_branches_cnt: int
     mx_depth: int
     mn_depth: int
+    scene: str
+    genre: str
+    epoch: str
+    tonality: str
+    extra: str
+    context: str
     goals: List[GoalParams]
 
 class UserRegisterRequest(BaseModel):
