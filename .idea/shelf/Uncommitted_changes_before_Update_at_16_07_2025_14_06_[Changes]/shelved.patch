@@ -1,0 +1,395 @@
+Index: db/games_db.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/db/games_db.py b/db/games_db.py
+--- a/db/games_db.py	(revision da3e5e3e61e82b35a0d0cbf2198b1d4a577ba7f3)
++++ b/db/games_db.py	(date 1752663290406)
+@@ -1,0 +1,9 @@
++from db.database import Database
++from db.logging import logger
++
++class Games:
++    def __init__(self, db: Database):
++        self.db = db
++
++    def create_game(self):
++        self.db.cursor.execute()
+\ No newline at end of file
+Index: db/database.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import psycopg2\nfrom psycopg2.extras import RealDictCursor\nimport json\nimport logging\nimport os\nfrom dotenv import load_dotenv\n\n\nload_dotenv()\n\n\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s [%(levelname)s] %(message)s',\n    filename='db.log',\n    filemode='a'\n)\n\nclass Database:\n    def __init__(self):\n        self.dbname = os.getenv('DB_NAME')\n        self.user = os.getenv('DB_USER')\n        self.password = os.getenv('DB_PASSWORD')\n        self.host = os.getenv('DB_HOST')\n        self.port = int(os.getenv('DB_PORT'))\n        \n        try:\n            self.conn = psycopg2.connect(\n                dbname=self.dbname,\n                user=self.user,\n                password=self.password,\n                host=self.host,\n                port=self.port\n            )\n            self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)\n            logging.info(f\"Connection to the database is successful: {self.host}:{self.port}/{self.dbname}\")\n        except Exception as e:\n            logging.error(f\"Error connecting to the database: {e}\")\n            raise\n\n    def commit(self):\n        self.conn.commit()\n\n    def close(self):\n        try:\n            self.cursor.close()\n            self.conn.close()\n            logging.info(\"The database connection is closed\")\n        except Exception as e:\n            logging.error(f\"Error closing the connection: {e}\")\n\n    def get_user_by_mail(self, mail):\n        try:\n            self.cursor.execute(\"SELECT * FROM users WHERE mail = %s;\", (mail,))\n            user = self.cursor.fetchone()\n            logging.info(f\"Received a user with an email: {mail}\")\n            return user\n        except Exception as e:\n            logging.error(f\"Error when receiving the user {mail}: {e}\")\n    # ---------- GAMES ----------\n    def create_game(self, user_id, title, technology_level=None, magic=None):\n        try:\n            self.cursor.execute(\n                \"\"\"INSERT INTO games (user_id, title, technology_level, magic)\n                   VALUES (%s, %s, %s, %s) RETURNING id;\"\"\",\n                (user_id, title, technology_level, magic)\n            )\n            game_id = self.cursor.fetchone()['id']\n            self.conn.commit()\n            logging.info(f\"The game was created by: {game_id} ({title}) for the user {user_id}\")\n            return game_id\n        except Exception as e:\n            logging.error(f\"Error when creating the game: {e}\")\n\n    def get_games_by_user(self, user_id):\n        try:\n            self.cursor.execute(\"SELECT * FROM games WHERE user_id = %s;\", (user_id,))\n            games = self.cursor.fetchall()\n            logging.info(f\"User's games have been received {user_id}: {len(games)} шт.\")\n            return games\n        except Exception as e:\n            logging.error(f\"Error when receiving user's games {user_id}: {e}\")\n\n    def update_game_title(self, game_id, new_title):\n        try:\n            self.cursor.execute(\n                \"UPDATE games SET title = %s WHERE id = %s;\", (new_title, game_id)\n            )\n            self.conn.commit()\n            logging.info(f\"The name of the game {game_id} has been updated to '{new_title}'\")\n        except Exception as e:\n            logging.error(f\"Error updating the game name {game_id}: {e}\")\n\n    def delete_game(self, game_id):\n        try:\n            self.cursor.execute(\"DELETE FROM games WHERE id = %s;\", (game_id,))\n            self.conn.commit()\n            logging.info(f\"Game deleted: {game_id}\")\n        except Exception as e:\n            logging.error(f\"Error deleting the game {game_id}: {e}\")\n\n    # ---------- SCENES ----------\n    def create_scene(self, game_id, title):\n        try:\n            self.cursor.execute(\n                \"\"\"INSERT INTO scenes (game_id, title)\n                   VALUES (%s, %s) RETURNING id;\"\"\",\n                (game_id, title)\n            )\n            scene_id = self.cursor.fetchone()['id']\n            self.conn.commit()\n            logging.info(f\"The scene was created: {scene_id} for the game {game_id}\")\n            return scene_id\n        except Exception as e:\n            logging.error(f\"Error when creating the scene: {e}\")\n\n    def update_scene_title(self, scene_id, new_title):\n        try:\n            self.cursor.execute(\n                \"UPDATE scenes SET title = %s WHERE id = %s;\", (new_title, scene_id)\n            )\n            self.conn.commit()\n            logging.info(f\"The name of the scene {scene_id} has been updated to '{new_title}'\")\n        except Exception as e:\n            logging.error(f\"Error updating the scene {scene_id}: {e}\")\n\n    def delete_scene(self, scene_id):\n        try:\n            self.cursor.execute(\"DELETE FROM scenes WHERE id = %s;\", (scene_id,))\n            self.conn.commit()\n            logging.info(f\"The scene has been deleted: {scene_id}\")\n        except Exception as e:\n            logging.error(f\"Error when deleting a scene  {scene_id}: {e}\")\n\n    # ---------- DIALOGUES ----------\n    def create_dialogue(self, scene_id, title, data):\n        try:\n            self.cursor.execute(\n                \"\"\"INSERT INTO dialogues (scene_id, title, data)\n                   VALUES (%s, %s, %s) RETURNING id;\"\"\",\n                (scene_id, title, json.dumps(data))\n            )\n            dialogue_id = self.cursor.fetchone()['id']\n            self.conn.commit()\n            logging.info(f\"Dialog created: {dialogue_id} for the scene {scene_id}\")\n            return dialogue_id\n        except Exception as e:\n            logging.error(f\"Error when creating the dialog: {e}\")\n\n    def update_dialogue_data(self, dialogue_id, new_data):\n        try:\n            self.cursor.execute(\n                \"UPDATE dialogues SET data = %s WHERE id = %s;\",\n                (json.dumps(new_data), dialogue_id)\n            )\n            self.conn.commit()\n            logging.info(f\"Dialog data {dialogue_id} updated\")\n        except Exception as e:\n            logging.error(f\"Error updating dialog data {dialogue_id}: {e}\")\n\n    def delete_dialogue(self, dialogue_id):\n        try:\n            self.cursor.execute(\"DELETE FROM dialogues WHERE id = %s;\", (dialogue_id,))\n            self.conn.commit()\n            logging.info(f\"Dialog deleted: {dialogue_id}\")\n        except Exception as e:\n            logging.error(f\"Error deleting the dialog {dialogue_id}: {e}\")\n\n    # ---------- CHARACTERS ----------\n    def create_character(self, game_id, is_npc, name, profession, goal,\n                         talk_style, traits, appearance, dialogue_id=None):\n        try:\n            self.cursor.execute(\n                \"\"\"INSERT INTO characters (\n                    game_id, dialogue_id, is_npc, name, profession,\n                    goal, talk_style, traits, appearance\n                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\n                   RETURNING id;\"\"\",\n                (game_id, dialogue_id, is_npc, name, profession,\n                 goal, talk_style, traits, appearance)\n            )\n            character_id = self.cursor.fetchone()['id']\n            self.conn.commit()\n            logging.info(f\"The character is created: {character_id} ({name})\")\n            return character_id\n        except Exception as e:\n            logging.error(f\"Error when creating a character: {e}\")\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/db/database.py b/db/database.py
+--- a/db/database.py	(revision da3e5e3e61e82b35a0d0cbf2198b1d4a577ba7f3)
++++ b/db/database.py	(date 1752657131040)
+@@ -23,7 +23,7 @@
+         self.password = os.getenv('DB_PASSWORD')
+         self.host = os.getenv('DB_HOST')
+         self.port = int(os.getenv('DB_PORT'))
+-        
++
+         try:
+             self.conn = psycopg2.connect(
+                 dbname=self.dbname,
+@@ -38,9 +38,6 @@
+             logging.error(f"Error connecting to the database: {e}")
+             raise
+ 
+-    def commit(self):
+-        self.conn.commit()
+-
+     def close(self):
+         try:
+             self.cursor.close()
+@@ -48,15 +45,7 @@
+             logging.info("The database connection is closed")
+         except Exception as e:
+             logging.error(f"Error closing the connection: {e}")
+-
+-    def get_user_by_mail(self, mail):
+-        try:
+-            self.cursor.execute("SELECT * FROM users WHERE mail = %s;", (mail,))
+-            user = self.cursor.fetchone()
+-            logging.info(f"Received a user with an email: {mail}")
+-            return user
+-        except Exception as e:
+-            logging.error(f"Error when receiving the user {mail}: {e}")
++'''
+     # ---------- GAMES ----------
+     def create_game(self, user_id, title, technology_level=None, magic=None):
+         try:
+@@ -185,4 +174,4 @@
+             return character_id
+         except Exception as e:
+             logging.error(f"Error when creating a character: {e}")
+-
++'''
+Index: src/llm/api/dialogue_endpoint.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from fastapi import APIRouter\nfrom lib.models.schemas import Params, DialogueResponse\nfrom lib.llm.generator import DialogGenerator\n\nrouter = APIRouter()\n\nclass DialogueController:\n    def __init__(self):\n        self.generator_class = DialogGenerator\n\n    def generate(self, params: Params):\n        generator = self.generator_class(params.dict())\n        generator.generate_structure()\n        return generator.generate_dialogue()\n\ndialogue_controller = DialogueController()\n\n@router.post(\"/generate\")\ndef generate(params: Params):\n    b = {\n  \"data\": [\n    {\n      \"id\": 1,\n      \"info\": \"NPC рассказывает о своей мечте стать великим изобретателем.\",\n      \"type\": \"M\",\n      \"mood\": \"воодушевлёный\",\n      \"goal_achieve\": 0,\n      \"to\": [\n        {\n          \"id\": 2,\n          \"mood\": \"воодушевлёный\",\n          \"line\": {\n            \"line\": \"Знаешь, я тоже иногда боюсь не справиться с заданием, но потом вспоминаю, что важно просто стараться.\",\n            \"info\": \"поддержка и понимание\"\n          }\n        }\n      ],\n      \"line\": \"\\\"Знаешь, я с детства мечтал изобрести что-то, что изменит мир! Представляешь, машину, которая превращает мусор в чистую энергию, или робота-учителя, который помогает детям учиться с удовольствием. Я уже набросал кучу чертежей в своей тетради — каждый вечер придумываю что-то новое! Может, когда-нибудь мои изобретения помогут людям жить лучше. Главное — не сдаваться и верить в свою мечту!\\\"\",\n      \"meta\": {}\n    },\n    {\n      \"id\": 2,\n      \"info\": \"NPC делится своими страхами перед неудачей.\",\n      \"type\": \"M\",\n      \"mood\": \"испуганный\",\n      \"goal_achieve\": 0,\n      \"to\": [\n        {\n          \"id\": 3,\n          \"mood\": \"нейтральный\",\n          \"line\": {\n            \"line\": \"Ты знаешь, даже великие изобретатели начинали с ошибок. Главное — не сдаваться и верить в себя. Я верю в тебя!\",\n            \"info\": \"поддержка и вера\"\n          }\n        }\n      ],\n      \"line\": \"\\\"Спасибо, что понимаешь... Но знаешь, иногда мне кажется, что одного старания мало. Вдруг я потрачу годы на изобретения, а они никому не пригодятся? Или окажутся бесполезными? Я вижу, как другие изобретатели создают удивительные вещи, а у меня пока получаются только чертежи с ошибками... Мне так страшно, что моя мечта так и останется просто мечтой...\\\"\",\n      \"meta\": {}\n    },\n    {\n      \"id\": 3,\n      \"info\": \"NPC спрашивает у героя, верит ли он в него.\",\n      \"type\": \"C\",\n      \"mood\": \"растерянный\",\n      \"goal_achieve\": 0,\n      \"to\": [\n        {\n          \"id\": 4,\n          \"mood\": \"воодушевлёный\",\n          \"line\": {\n            \"line\": \"Конечно, я всегда буду рядом, чтобы поддержать тебя. Вместе мы справимся со всеми страхами и неудачами.\",\n            \"info\": \"поддержка и ободрение\"\n          }\n        },\n        {\n          \"id\": 5,\n          \"mood\": \"грустный\",\n          \"line\": {\n            \"line\": \"Если ты решишь бросить свою мечту из-за страха неудачи, то кто тогда воплотит все эти удивительные идеи в жизнь? Ты способен на большее, чем думаешь.\",\n            \"info\": \"мотивация и вызов\"\n          }\n        }\n      ],\n      \"line\": \"\\\"Спасибо... Ты прав, наверное. Просто иногда кажется, что все вокруг уже чего-то добились, а я всё ещё топчусь на месте. Но если ты веришь в меня... Может, и правда стоит попробовать ещё раз? Даже если не получится сразу. Ты ведь будешь рядом, если мне снова станет страшно?\\\"\",\n      \"meta\": {}\n    },\n    {\n      \"id\": 4,\n      \"info\": \"NPC благодарит героя за поддержку и решает продолжить свои изыскания.\",\n      \"type\": \"P\",\n      \"mood\": \"благодарный\",\n      \"goal_achieve\": 1,\n      \"to\": [],\n      \"line\": \"\\\"Спасибо тебе... Ты прав, даже самые великие изобретатели когда-то ошибались. Твои слова согрели мне сердце, и теперь я чувствую, что могу свернуть горы! Я обязательно продолжу свои эксперименты, и пусть не всё получится с первого раза — я буду пробовать снова и снова. Ты мой самый настоящий друг, и с такой поддержкой мне не страшны никакие преграды. Может быть, однажды я изобрету что-то, что изменит мир... И ты будешь первым, кто это увидит!\\\"\",\n      \"meta\": {}\n    },\n    {\n      \"id\": 5,\n      \"info\": \"NPC расстраивается из-за отсутствия веры в него и решает бросить свою мечту.\",\n      \"type\": \"P\",\n      \"mood\": \"грустный\",\n      \"goal_achieve\": 0,\n      \"to\": [],\n      \"line\": \"\\\"Знаешь... Может, ты и прав, но... Мне кажется, я просто не создан для этого. Каждый раз, когда я пытаюсь что-то сделать, всё идёт не так. Даже мои родители говорят, что я зря трачу время. А если никто не верит, может, и правда стоит бросить? Мне так тяжело продолжать, когда вокруг только сомнения... Может, лучше просто забыть об изобретениях и заняться чем-то обычным...\\\"\",\n      \"meta\": {}\n    }\n  ]\n}\n    a = dialogue_controller.generate(params)\n    print(a)\n    return a\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/llm/api/dialogue_endpoint.py b/src/llm/api/dialogue_endpoint.py
+--- a/src/llm/api/dialogue_endpoint.py	(revision da3e5e3e61e82b35a0d0cbf2198b1d4a577ba7f3)
++++ b/src/llm/api/dialogue_endpoint.py	(date 1752658165710)
+@@ -17,95 +17,6 @@
+ 
+ @router.post("/generate")
+ def generate(params: Params):
+-    b = {
+-  "data": [
+-    {
+-      "id": 1,
+-      "info": "NPC рассказывает о своей мечте стать великим изобретателем.",
+-      "type": "M",
+-      "mood": "воодушевлёный",
+-      "goal_achieve": 0,
+-      "to": [
+-        {
+-          "id": 2,
+-          "mood": "воодушевлёный",
+-          "line": {
+-            "line": "Знаешь, я тоже иногда боюсь не справиться с заданием, но потом вспоминаю, что важно просто стараться.",
+-            "info": "поддержка и понимание"
+-          }
+-        }
+-      ],
+-      "line": "\"Знаешь, я с детства мечтал изобрести что-то, что изменит мир! Представляешь, машину, которая превращает мусор в чистую энергию, или робота-учителя, который помогает детям учиться с удовольствием. Я уже набросал кучу чертежей в своей тетради — каждый вечер придумываю что-то новое! Может, когда-нибудь мои изобретения помогут людям жить лучше. Главное — не сдаваться и верить в свою мечту!\"",
+-      "meta": {}
+-    },
+-    {
+-      "id": 2,
+-      "info": "NPC делится своими страхами перед неудачей.",
+-      "type": "M",
+-      "mood": "испуганный",
+-      "goal_achieve": 0,
+-      "to": [
+-        {
+-          "id": 3,
+-          "mood": "нейтральный",
+-          "line": {
+-            "line": "Ты знаешь, даже великие изобретатели начинали с ошибок. Главное — не сдаваться и верить в себя. Я верю в тебя!",
+-            "info": "поддержка и вера"
+-          }
+-        }
+-      ],
+-      "line": "\"Спасибо, что понимаешь... Но знаешь, иногда мне кажется, что одного старания мало. Вдруг я потрачу годы на изобретения, а они никому не пригодятся? Или окажутся бесполезными? Я вижу, как другие изобретатели создают удивительные вещи, а у меня пока получаются только чертежи с ошибками... Мне так страшно, что моя мечта так и останется просто мечтой...\"",
+-      "meta": {}
+-    },
+-    {
+-      "id": 3,
+-      "info": "NPC спрашивает у героя, верит ли он в него.",
+-      "type": "C",
+-      "mood": "растерянный",
+-      "goal_achieve": 0,
+-      "to": [
+-        {
+-          "id": 4,
+-          "mood": "воодушевлёный",
+-          "line": {
+-            "line": "Конечно, я всегда буду рядом, чтобы поддержать тебя. Вместе мы справимся со всеми страхами и неудачами.",
+-            "info": "поддержка и ободрение"
+-          }
+-        },
+-        {
+-          "id": 5,
+-          "mood": "грустный",
+-          "line": {
+-            "line": "Если ты решишь бросить свою мечту из-за страха неудачи, то кто тогда воплотит все эти удивительные идеи в жизнь? Ты способен на большее, чем думаешь.",
+-            "info": "мотивация и вызов"
+-          }
+-        }
+-      ],
+-      "line": "\"Спасибо... Ты прав, наверное. Просто иногда кажется, что все вокруг уже чего-то добились, а я всё ещё топчусь на месте. Но если ты веришь в меня... Может, и правда стоит попробовать ещё раз? Даже если не получится сразу. Ты ведь будешь рядом, если мне снова станет страшно?\"",
+-      "meta": {}
+-    },
+-    {
+-      "id": 4,
+-      "info": "NPC благодарит героя за поддержку и решает продолжить свои изыскания.",
+-      "type": "P",
+-      "mood": "благодарный",
+-      "goal_achieve": 1,
+-      "to": [],
+-      "line": "\"Спасибо тебе... Ты прав, даже самые великие изобретатели когда-то ошибались. Твои слова согрели мне сердце, и теперь я чувствую, что могу свернуть горы! Я обязательно продолжу свои эксперименты, и пусть не всё получится с первого раза — я буду пробовать снова и снова. Ты мой самый настоящий друг, и с такой поддержкой мне не страшны никакие преграды. Может быть, однажды я изобрету что-то, что изменит мир... И ты будешь первым, кто это увидит!\"",
+-      "meta": {}
+-    },
+-    {
+-      "id": 5,
+-      "info": "NPC расстраивается из-за отсутствия веры в него и решает бросить свою мечту.",
+-      "type": "P",
+-      "mood": "грустный",
+-      "goal_achieve": 0,
+-      "to": [],
+-      "line": "\"Знаешь... Может, ты и прав, но... Мне кажется, я просто не создан для этого. Каждый раз, когда я пытаюсь что-то сделать, всё идёт не так. Даже мои родители говорят, что я зря трачу время. А если никто не верит, может, и правда стоит бросить? Мне так тяжело продолжать, когда вокруг только сомнения... Может, лучше просто забыть об изобретениях и заняться чем-то обычным...\"",
+-      "meta": {}
+-    }
+-  ]
+-}
+     a = dialogue_controller.generate(params)
+     print(a)
+     return a
+Index: lib/llm/generator.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from string import Template\nfrom networkx import DiGraph\nfrom openai import OpenAI\nfrom dotenv import load_dotenv\nfrom collections import deque\n\nfrom lib.llm.settings import LLMSettings\n\nimport networkx as nx\nimport os\nimport json\n\n\nclass DialogGenerator:\n    def __init__(self, params: dict):\n        load_dotenv()\n        self.api_key = os.getenv(\"DEEPSEEK_API_KEY\")\n        self.structure_model_type = os.getenv(\"MODEL_TYPE_STRUCTURE\")\n        self.structure_model_max_tokens = int(os.getenv(\"STRUCTURE_MODEL_MAX_TOKENS\"))\n        self.dialogue_model_type = os.getenv(\"MODEL_TYPE_DIALOGUE\")\n        self.dialogue_model_max_tokens = int(os.getenv(\"DIALOGUE_MODEL_MAX_TOKENS\"))\n        self.client = OpenAI(api_key=self.api_key, base_url=\"https://api.deepseek.com\")\n\n        self.params = params\n        self.npc = self.params[\"npc\"]\n        self.hero = self.params[\"npc\"]\n        self.goals = self.params[\"goals\"]\n        self.llm_settings = LLMSettings()\n        self.dialog_graph = None\n\n    def generate_structure(self):\n\n\n        with open(\"resources/prompt_structure.txt\", encoding='utf-8', mode=\"r\") as prompt_structure:\n            prompt_structure = Template(prompt_structure.read()).safe_substitute(\n                json_structure=self.llm_settings.get_structure(),\n                json_node_structure=self.llm_settings.get_node_structure(),\n                NPC_name=self.npc[\"name\"],\n                NPC_talk_style=self.npc[\"talk_style\"],\n                NPC_profession=self.npc[\"profession\"],\n                NPC_look=self.npc[\"look\"],\n                NPC_traits=self.npc[\"traits\"],\n                NPC_extra=self.npc[\"extra\"],\n                hero_name=self.hero[\"name\"],\n                hero_talk_style=self.hero[\"talk_style\"],\n                hero_profession=self.hero[\"profession\"],\n                hero_look=self.hero[\"look\"],\n                hero_extra=self.hero[\"extra\"],\n                hero_traits=self.hero[\"traits\"],\n                NPC_to_hero_relation=self.params[\"NPC_to_hero_relation\"],\n                hero_to_NPC_relation=self.params[\"hero_to_NPC_relation\"],\n                world_settings=self.params[\"world_settings\"],\n                scene = self.params[\"scene\"],\n                genre = self.params[\"genre\"],\n                epoch = self.params[\"epoch\"],\n                tonality = self.params[\"tonality\"],\n                extra = self.params[\"extra\"],\n                context = self.params[\"context\"],\n                mx_answers_cnt=self.params[\"mx_answers_cnt\"],\n                mn_answers_cnt=self.params[\"mn_answers_cnt\"],\n                mx_depth=self.params[\"mx_depth\"],\n                mn_depth=self.params[\"mn_depth\"],\n                moods_list=self.llm_settings.get_moods(),\n                goals=self.goals)\n\n        structure_response = self.client.chat.completions.create(\n            model=self.dialogue_model_type,\n            messages=[\n                {\"role\": \"system\", \"content\": self.llm_settings.get_system_prompt()},\n                {\"role\": \"user\", \"content\": prompt_structure},\n            ],\n            stream=False,\n            max_tokens=self.structure_model_max_tokens,\n            temperature=0.6,\n            top_p=0.95,\n            response_format={\n                'type': 'json_object'\n            }\n        )\n\n        parsed = json.loads(structure_response.choices[0].message.content)\n        print(parsed)\n        dialog_graph = nx.DiGraph()\n        for node in parsed['data']:\n            # print(node)\n            dialog_graph.add_node(node[\"id\"], **node)\n            for child in node['to']:\n                dialog_graph.add_edge(node[\"id\"], child[\"id\"], **child)\n\n        self.dialog_graph = dialog_graph\n        return dialog_graph\n\n    def generate_dialogue(self):\n        dialog_graph = self.dialog_graph\n        q = deque()\n        start_node = list(dialog_graph.nodes)[0]\n        q.append(start_node)\n        while q:\n            t = q.popleft()\n            next_replics = []\n            prev_chains = []\n            paths = list(nx.all_simple_paths(dialog_graph, source=start_node, target=t))\n            next_nodes = list(dialog_graph.adj[t].keys())\n            lst_node = -1\n            for path in paths:\n                dialog_chain = \"\"\n                for ind in range(0, len(path)):\n                    node = path[ind]\n                    if ind < len(path) - 1:\n                        dialog_chain += f'**NPC**: {dialog_graph.nodes[node][\"info\"]}\\n'\n                    if ind:\n                        dialog_chain += f'**Игрок**: {dialog_graph.edges[lst_node, node][\"line\"]}\\n'\n                    lst_node = node\n                prev_chains.append(dialog_chain)\n            for next_node in next_nodes:\n                next_replics.append(dialog_graph.nodes[next_node][\"info\"])\n                if next_node not in q:\n                    q.append(next_node)\n            with open(\"resources/prompt_nodes_content.txt\", encoding='utf-8', mode=\"r\") as prompt_nodes_content:\n                prompt_nodes_content = Template(prompt_nodes_content.read()).safe_substitute(\n\n                    chain=\"\\n = = = = \\n\".join(prev_chains),\n                    tematic=dialog_graph.nodes[t][\"info\"],\n                    world_settings=self.params[\"world_settings\"],\n                    name=self.npc[\"name\"],\n                    talk_style=self.npc[\"talk_style\"],\n                    profession=self.npc[\"profession\"],\n                    traits=self.npc[\"traits\"],\n                    scene=self.params[\"scene\"],\n                    extra=self.params[\"extra\"],\n                    look=self.npc[\"look\"],\n                    mood=dialog_graph.nodes[t][\"mood\"],\n                    relation=self.params[\"NPC_to_hero_relation\"]\n                )\n            response = self.client.chat.completions.create(\n                model=self.dialogue_model_type,\n                messages=[\n                    {\"role\": \"system\", \"content\": self.llm_settings.get_system_prompt()},\n                    {\"role\": \"user\", \"content\": prompt_nodes_content},\n                ],\n                stream=False,\n                max_tokens=self.structure_model_max_tokens\n            )\n            dialog_graph.nodes[t][\"line\"] = response.choices[0].message.content\n            for i in range(0, len(prev_chains)):\n                prev_chains[i] += f'**NPC**: {dialog_graph.nodes[t][\"line\"]}\\n'\n            with open(\"resources/prompt_edges_content.txt\", encoding='utf-8', mode=\"r\") as prompt:\n                prompt_edges_content = Template(prompt.read()).safe_substitute(\n                    json_edge_structure=self.llm_settings.get_edge_structure(),\n                    chain=\"\\n = = = = \\n\".join(prev_chains),\n                    tematics=\"\\n = = = = \\n\".join(next_replics),\n                    replic_cnt=len(next_replics),\n                    world_settings=self.params[\"world_settings\"],\n                    name=self.hero[\"name\"],\n                    talk_style=self.hero[\"talk_style\"],\n                    profession=self.hero[\"profession\"],\n                    traits=self.hero[\"traits\"],\n                    look=self.hero[\"look\"],\n                    hero_extra=self.hero[\"extra\"],\n                    mood=dialog_graph.nodes[t][\"mood\"],\n                    extra=self.params[\"extra\"],\n                    scene=self.params[\"scene\"],\n                    relation=self.params[\"hero_to_NPC_relation\"]\n                )\n            response = self.client.chat.completions.create(\n                model=\"deepseek-chat\",\n                messages=[\n                    {\"role\": \"system\", \"content\": self.llm_settings.get_system_prompt()},\n                    {\"role\": \"user\", \"content\": prompt_edges_content},\n                ],\n                stream=False,\n                response_format={\n                    'type': 'json_object'\n                }\n            )\n            answers = json.loads(response.choices[0].message.content)[\"lines\"]\n            print(\"--answers--\")\n            print(answers)\n            for i in range(0, len(next_replics)):\n                for key in answers[i].keys():\n                    dialog_graph.edges[t, next_nodes[i]][key] = answers[i][key]\n\n        graph = {\"data\": []}\n        for node in list(dialog_graph.nodes):\n            graph[\"data\"].append(dialog_graph.nodes[node])\n            graph[\"data\"][-1][\"id\"] = node\n            graph[\"data\"][-1][\"to\"] = []\n            graph[\"data\"][-1][\"meta\"] = {}\n            for next_node in list(dialog_graph.adj[node].keys()):\n                graph[\"data\"][-1][\"to\"].append(dialog_graph.edges[(node, next_node)])\n                graph[\"data\"][-1][\"to\"][-1][\"id\"] = next_node\n\n        return graph\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/lib/llm/generator.py b/lib/llm/generator.py
+--- a/lib/llm/generator.py	(revision da3e5e3e61e82b35a0d0cbf2198b1d4a577ba7f3)
++++ b/lib/llm/generator.py	(date 1752658597619)
+@@ -16,9 +16,9 @@
+         load_dotenv()
+         self.api_key = os.getenv("DEEPSEEK_API_KEY")
+         self.structure_model_type = os.getenv("MODEL_TYPE_STRUCTURE")
+-        self.structure_model_max_tokens = int(os.getenv("STRUCTURE_MODEL_MAX_TOKENS"))
++        self.structure_model_max_tokens = int(os.getenv("STRUCTURE_MODEL_MAX_TOKENS", 8192))
+         self.dialogue_model_type = os.getenv("MODEL_TYPE_DIALOGUE")
+-        self.dialogue_model_max_tokens = int(os.getenv("DIALOGUE_MODEL_MAX_TOKENS"))
++        self.dialogue_model_max_tokens = int(os.getenv("DIALOGUE_MODEL_MAX_TOKENS", 8192))
+         self.client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
+ 
+         self.params = params
+Index: db/users_db.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from database import Database\nfrom db.logging import logger\n\n\nclass Users(Database):\n    def create_user(self, mail, name, surname, password_hash):\n        try:\n            self.cursor.execute(\n                \"\"\"INSERT INTO users (mail, name, surname, password_hash)\n                   VALUES (%s, %s, %s, %s) RETURNING id;\"\"\",\n                (mail, name, surname, password_hash)\n            )\n            user_id = self.cursor.fetchone()['id']\n            self.conn.commit()\n            logger.info(f\"The user has been created: {user_id} ({name})\")\n            return user_id\n        except Exception as e:\n            logger.error(f\"Error when creating a user {name}: {e}\")\n\n    def get_user_by_mail(self, mail):\n        try:\n            self.cursor.execute(\"SELECT * FROM users WHERE mail = %s;\", (mail,))\n            user = self.cursor.fetchone()\n            logger.info(f\"Received a user with an email: {mail}\")\n            return user\n        except Exception as e:\n            logger.error(f\"Error when receiving the user {mail}: {e}\")\n\n    def update_user_name(self, user_id, new_name):\n        try:\n            self.cursor.execute(\n                \"UPDATE users SET name = %s WHERE id = %s;\", (new_name, user_id)\n            )\n            self.conn.commit()\n            logger.info(f\"User name {user_id} updated to {new_name}\")\n        except Exception as e:\n            logger.error(f\"Error updating the username {user_id}: {e}\")\n\n    def delete_user(self, user_id):\n        try:\n            self.cursor.execute(\"DELETE FROM users WHERE id = %s;\", (user_id,))\n            self.conn.commit()\n            logger.info(f\"The user has been deleted: {user_id}\")\n        except Exception as e:\n            logger.error(f\"Error when deleting a user {user_id}: {e}\")\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/db/users_db.py b/db/users_db.py
+--- a/db/users_db.py	(revision da3e5e3e61e82b35a0d0cbf2198b1d4a577ba7f3)
++++ b/db/users_db.py	(date 1752658165715)
+@@ -1,17 +1,20 @@
+-from database import Database
++from db.database import Database
+ from db.logging import logger
+ 
+ 
+-class Users(Database):
++class Users:
++    def __init__(self, db: Database):
++        self.db = db
++
+     def create_user(self, mail, name, surname, password_hash):
+         try:
+-            self.cursor.execute(
++            self.db.cursor.execute(
+                 """INSERT INTO users (mail, name, surname, password_hash)
+                    VALUES (%s, %s, %s, %s) RETURNING id;""",
+                 (mail, name, surname, password_hash)
+             )
+-            user_id = self.cursor.fetchone()['id']
+-            self.conn.commit()
++            user_id = self.db.cursor.fetchone()['id']
++            self.db.conn.commit()
+             logger.info(f"The user has been created: {user_id} ({name})")
+             return user_id
+         except Exception as e:
+@@ -19,8 +22,8 @@
+ 
+     def get_user_by_mail(self, mail):
+         try:
+-            self.cursor.execute("SELECT * FROM users WHERE mail = %s;", (mail,))
+-            user = self.cursor.fetchone()
++            self.db.cursor.execute("SELECT * FROM users WHERE mail = %s;", mail)
++            user = self.db.cursor.fetchone()
+             logger.info(f"Received a user with an email: {mail}")
+             return user
+         except Exception as e:
+@@ -28,18 +31,18 @@
+ 
+     def update_user_name(self, user_id, new_name):
+         try:
+-            self.cursor.execute(
++            self.db.cursor.execute(
+                 "UPDATE users SET name = %s WHERE id = %s;", (new_name, user_id)
+             )
+-            self.conn.commit()
++            self.db.conn.commit()
+             logger.info(f"User name {user_id} updated to {new_name}")
+         except Exception as e:
+             logger.error(f"Error updating the username {user_id}: {e}")
+ 
+     def delete_user(self, user_id):
+         try:
+-            self.cursor.execute("DELETE FROM users WHERE id = %s;", (user_id,))
+-            self.conn.commit()
++            self.db.cursor.execute("DELETE FROM users WHERE id = %s;", (user_id,))
++            self.db.conn.commit()
+             logger.info(f"The user has been deleted: {user_id}")
+         except Exception as e:
+             logger.error(f"Error when deleting a user {user_id}: {e}")
+Index: db/scenes_db.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/db/scenes_db.py b/db/scenes_db.py
+new file mode 100644
+--- /dev/null	(date 1752658165720)
++++ b/db/scenes_db.py	(date 1752658165720)
+@@ -0,0 +1,5 @@
++from db.database import Database
++from db.logging import logger
++
++class Scenes(Database):
++    pass
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"72443925-fcfb-47db-979b-a4bb7ee3abb0\" name=\"Changes\" comment=\"fix logging in db\">\n      <change afterPath=\"$PROJECT_DIR$/db/characters_db.py\" afterDir=\"false\" />\n      <change afterPath=\"$PROJECT_DIR$/db/dialogues_db.py\" afterDir=\"false\" />\n      <change afterPath=\"$PROJECT_DIR$/db/games_db.py\" afterDir=\"false\" />\n      <change afterPath=\"$PROJECT_DIR$/db/logging.py\" afterDir=\"false\" />\n      <change afterPath=\"$PROJECT_DIR$/db/scenes.db.py\" afterDir=\"false\" />\n      <change afterPath=\"$PROJECT_DIR$/db/users_db.py\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/db/database.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/db/database.py\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/lib/llm/generator.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/lib/llm/generator.py\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"Python Script\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\n      <map>\n        <entry key=\"$PROJECT_DIR$\" value=\"master\" />\n      </map>\n    </option>\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"GitHubPullRequestSearchHistory\">{\n  &quot;lastFilter&quot;: {\n    &quot;state&quot;: &quot;OPEN&quot;,\n    &quot;assignee&quot;: &quot;hilyyx&quot;\n  }\n}</component>\n  <component name=\"GithubPullRequestsUISettings\">{\n  &quot;selectedUrlAndAccountId&quot;: {\n    &quot;url&quot;: &quot;https://github.com/hilyyx/screenwriter-backend.git&quot;,\n    &quot;accountId&quot;: &quot;13adb657-fd47-4ffa-a69b-ab4245b75fd1&quot;\n  }\n}</component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 1\n}</component>\n  <component name=\"ProjectId\" id=\"2zPc6Y3FMhNOXUl0nZ74Ti1RaYs\" />\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\n  </component>\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;Python.app.executor&quot;: &quot;Run&quot;,\n    &quot;Python.database.executor&quot;: &quot;Run&quot;,\n    &quot;Python.main.executor&quot;: &quot;Run&quot;,\n    &quot;Python.prompt_builder.executor&quot;: &quot;Run&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,\n    &quot;git-widget-placeholder&quot;: &quot;master&quot;,\n    &quot;last_opened_file_path&quot;: &quot;D:/screenwriter-backend/src/auth/api&quot;,\n    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.Python&quot;\n  }\n}</component>\n  <component name=\"RecentsManager\">\n    <key name=\"CopyFile.RECENT_KEYS\">\n      <recent name=\"D:\\screenwriter-backend\\src\\auth\\api\" />\n      <recent name=\"D:\\screenwriter-backend\\src\" />\n      <recent name=\"D:\\screenwriter-backend\\lib\\auth\" />\n      <recent name=\"D:\\screenwriter-backend\\src\\models\" />\n      <recent name=\"D:\\screenwriter-backend\\src\\api\" />\n    </key>\n    <key name=\"MoveFile.RECENT_KEYS\">\n      <recent name=\"D:\\screenwriter-backend\\resources\" />\n      <recent name=\"D:\\screenwriter-backend\\lib\" />\n      <recent name=\"D:\\screenwriter-backend\\src\\llm\" />\n      <recent name=\"D:\\screenwriter-backend\" />\n      <recent name=\"D:\\screenwriter-backend\\src\" />\n    </key>\n  </component>\n  <component name=\"RunManager\" selected=\"Python.prompt_builder\">\n    <configuration name=\"database\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\n      <module name=\"screenwriter-backend\" />\n      <option name=\"ENV_FILES\" value=\"\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/db\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/db/database.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n    <configuration name=\"prompt_builder\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\n      <module name=\"screenwriter-backend\" />\n      <option name=\"ENV_FILES\" value=\"\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/src/llm\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <option name=\"SCRIPT_NAME\" value=\"D:\\screenwriter-backend\\lib\\llm\\prompt_builder.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n    <recent_temporary>\n      <list>\n        <item itemvalue=\"Python.database\" />\n        <item itemvalue=\"Python.prompt_builder\" />\n        <item itemvalue=\"Python.prompt_builder\" />\n        <item itemvalue=\"Python.prompt_builder\" />\n        <item itemvalue=\"Python.prompt_builder\" />\n      </list>\n    </recent_temporary>\n  </component>\n  <component name=\"SharedIndexes\">\n    <attachedChunks>\n      <set>\n        <option value=\"bundled-python-sdk-a5bc9544c897-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.23654.177\" />\n      </set>\n    </attachedChunks>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"72443925-fcfb-47db-979b-a4bb7ee3abb0\" name=\"Changes\" comment=\"\" />\n      <created>1751635973439</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1751635973439</updated>\n    </task>\n    <task id=\"LOCAL-00001\" summary=\"first commit\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1751636219036</created>\n      <option name=\"number\" value=\"00001\" />\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1751636219036</updated>\n    </task>\n    <task id=\"LOCAL-00002\" summary=\"init .toml\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1751706856295</created>\n      <option name=\"number\" value=\"00002\" />\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1751706856295</updated>\n    </task>\n    <task id=\"LOCAL-00003\" summary=\"future architecture\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752050252740</created>\n      <option name=\"number\" value=\"00003\" />\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752050252740</updated>\n    </task>\n    <task id=\"LOCAL-00004\" summary=\"init a file for uploading resources\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752057092591</created>\n      <option name=\"number\" value=\"00004\" />\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752057092591</updated>\n    </task>\n    <task id=\"LOCAL-00005\" summary=\"init .env api_key\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752058038398</created>\n      <option name=\"number\" value=\"00005\" />\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752058038398</updated>\n    </task>\n    <task id=\"LOCAL-00006\" summary=\"refactor architecture main.py\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752058339092</created>\n      <option name=\"number\" value=\"00006\" />\n      <option name=\"presentableId\" value=\"LOCAL-00006\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752058339092</updated>\n    </task>\n    <task id=\"LOCAL-00007\" summary=\"future app.py edit\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752059654070</created>\n      <option name=\"number\" value=\"00007\" />\n      <option name=\"presentableId\" value=\"LOCAL-00007\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752059654070</updated>\n    </task>\n    <task id=\"LOCAL-00008\" summary=\"init init.py for poetry\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752060614283</created>\n      <option name=\"number\" value=\"00008\" />\n      <option name=\"presentableId\" value=\"LOCAL-00008\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752060614283</updated>\n    </task>\n    <task id=\"LOCAL-00009\" summary=\"init schemas.py\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752061227980</created>\n      <option name=\"number\" value=\"00009\" />\n      <option name=\"presentableId\" value=\"LOCAL-00009\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752061227980</updated>\n    </task>\n    <task id=\"LOCAL-00010\" summary=\"init new files\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752066066370</created>\n      <option name=\"number\" value=\"00010\" />\n      <option name=\"presentableId\" value=\"LOCAL-00010\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752066066370</updated>\n    </task>\n    <task id=\"LOCAL-00011\" summary=\"init new files\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752066239145</created>\n      <option name=\"number\" value=\"00011\" />\n      <option name=\"presentableId\" value=\"LOCAL-00011\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752066239145</updated>\n    </task>\n    <task id=\"LOCAL-00012\" summary=\"refactor .gitignore\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752067118697</created>\n      <option name=\"number\" value=\"00012\" />\n      <option name=\"presentableId\" value=\"LOCAL-00012\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752067118697</updated>\n    </task>\n    <task id=\"LOCAL-00013\" summary=\"init\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752067690156</created>\n      <option name=\"number\" value=\"00013\" />\n      <option name=\"presentableId\" value=\"LOCAL-00013\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752067690156</updated>\n    </task>\n    <task id=\"LOCAL-00014\" summary=\"init .md\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752070506281</created>\n      <option name=\"number\" value=\"00014\" />\n      <option name=\"presentableId\" value=\"LOCAL-00014\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752070506281</updated>\n    </task>\n    <task id=\"LOCAL-00015\" summary=\"refactor architecture\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752135952409</created>\n      <option name=\"number\" value=\"00015\" />\n      <option name=\"presentableId\" value=\"LOCAL-00015\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752135952409</updated>\n    </task>\n    <task id=\"LOCAL-00016\" summary=\"future: generate normal structure&#10;fix in future: return json\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752147596580</created>\n      <option name=\"number\" value=\"00016\" />\n      <option name=\"presentableId\" value=\"LOCAL-00016\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752147596580</updated>\n    </task>\n    <task id=\"LOCAL-00017\" summary=\"init new prompt\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752155264319</created>\n      <option name=\"number\" value=\"00017\" />\n      <option name=\"presentableId\" value=\"LOCAL-00017\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752155264320</updated>\n    </task>\n    <task id=\"LOCAL-00018\" summary=\"future fix generator.py\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752156731224</created>\n      <option name=\"number\" value=\"00018\" />\n      <option name=\"presentableId\" value=\"LOCAL-00018\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752156731224</updated>\n    </task>\n    <task id=\"LOCAL-00019\" summary=\"future fix generator.py\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752166946860</created>\n      <option name=\"number\" value=\"00019\" />\n      <option name=\"presentableId\" value=\"LOCAL-00019\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752166946860</updated>\n    </task>\n    <task id=\"LOCAL-00020\" summary=\"future ООП paradigma\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752170472503</created>\n      <option name=\"number\" value=\"00020\" />\n      <option name=\"presentableId\" value=\"LOCAL-00020\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752170472503</updated>\n    </task>\n    <task id=\"LOCAL-00021\" summary=\"init new progress\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752170583283</created>\n      <option name=\"number\" value=\"00021\" />\n      <option name=\"presentableId\" value=\"LOCAL-00021\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752170583283</updated>\n    </task>\n    <task id=\"LOCAL-00022\" summary=\"new structure oop\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752223716858</created>\n      <option name=\"number\" value=\"00022\" />\n      <option name=\"presentableId\" value=\"LOCAL-00022\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752223716858</updated>\n    </task>\n    <task id=\"LOCAL-00023\" summary=\"future progress\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752243898929</created>\n      <option name=\"number\" value=\"00023\" />\n      <option name=\"presentableId\" value=\"LOCAL-00023\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752243898929</updated>\n    </task>\n    <task id=\"LOCAL-00024\" summary=\"init database.py\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752312312317</created>\n      <option name=\"number\" value=\"00024\" />\n      <option name=\"presentableId\" value=\"LOCAL-00024\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752312312317</updated>\n    </task>\n    <task id=\"LOCAL-00025\" summary=\"fix new field in graph generator.py\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752316929504</created>\n      <option name=\"number\" value=\"00025\" />\n      <option name=\"presentableId\" value=\"LOCAL-00025\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752316929504</updated>\n    </task>\n    <task id=\"LOCAL-00026\" summary=\"future complete registration\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752387160007</created>\n      <option name=\"number\" value=\"00026\" />\n      <option name=\"presentableId\" value=\"LOCAL-00026\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752387160007</updated>\n    </task>\n    <task id=\"LOCAL-00027\" summary=\"fix structure json\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752576811479</created>\n      <option name=\"number\" value=\"00027\" />\n      <option name=\"presentableId\" value=\"LOCAL-00027\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752576811479</updated>\n    </task>\n    <task id=\"LOCAL-00028\" summary=\"fix authentication\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752584917461</created>\n      <option name=\"number\" value=\"00028\" />\n      <option name=\"presentableId\" value=\"LOCAL-00028\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752584917461</updated>\n    </task>\n    <task id=\"LOCAL-00029\" summary=\"new bug!\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752589301907</created>\n      <option name=\"number\" value=\"00029\" />\n      <option name=\"presentableId\" value=\"LOCAL-00029\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752589301907</updated>\n    </task>\n    <task id=\"LOCAL-00030\" summary=\"fix and future all work complete!!!!!!!!!! mvp is completed!\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752590340358</created>\n      <option name=\"number\" value=\"00030\" />\n      <option name=\"presentableId\" value=\"LOCAL-00030\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752590340358</updated>\n    </task>\n    <task id=\"LOCAL-00031\" summary=\"fix logging in db\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1752650929719</created>\n      <option name=\"number\" value=\"00031\" />\n      <option name=\"presentableId\" value=\"LOCAL-00031\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1752650929719</updated>\n    </task>\n    <option name=\"localTasksCounter\" value=\"32\" />\n    <servers />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State />\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n  <component name=\"VcsManagerConfiguration\">\n    <MESSAGE value=\"init .env api_key\" />\n    <MESSAGE value=\"refactor architecture main.py\" />\n    <MESSAGE value=\"future app.py edit\" />\n    <MESSAGE value=\"init init.py for poetry\" />\n    <MESSAGE value=\"init schemas.py\" />\n    <MESSAGE value=\"init new files\" />\n    <MESSAGE value=\"refactor .gitignore\" />\n    <MESSAGE value=\"init\" />\n    <MESSAGE value=\"init .md\" />\n    <MESSAGE value=\"refactor architecture\" />\n    <MESSAGE value=\"future: generate normal structure&#10;fix in future: return json\" />\n    <MESSAGE value=\"init new prompt\" />\n    <MESSAGE value=\"future fix generator.py\" />\n    <MESSAGE value=\"future ООП paradigma\" />\n    <MESSAGE value=\"init new progress\" />\n    <MESSAGE value=\"new structure oop\" />\n    <MESSAGE value=\"future progress\" />\n    <MESSAGE value=\"init database.py\" />\n    <MESSAGE value=\"fix new field in graph generator.py\" />\n    <MESSAGE value=\"future complete registration\" />\n    <MESSAGE value=\"fix structure json\" />\n    <MESSAGE value=\"fix authentication\" />\n    <MESSAGE value=\"new bug!\" />\n    <MESSAGE value=\"fix and future all work complete!!!!!!!!!! mvp is completed!\" />\n    <MESSAGE value=\"fix logging in db\" />\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"fix logging in db\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision da3e5e3e61e82b35a0d0cbf2198b1d4a577ba7f3)
++++ b/.idea/workspace.xml	(date 1752663991602)
+@@ -4,16 +4,17 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="72443925-fcfb-47db-979b-a4bb7ee3abb0" name="Changes" comment="fix logging in db">
+-      <change afterPath="$PROJECT_DIR$/db/characters_db.py" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/db/dialogues_db.py" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/db/games_db.py" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/db/logging.py" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/db/scenes.db.py" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/db/users_db.py" afterDir="false" />
++    <list default="true" id="72443925-fcfb-47db-979b-a4bb7ee3abb0" name="Changes" comment="init new architecture for db">
++      <change afterPath="$PROJECT_DIR$/db/scenes_db.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/db/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/database.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/db/games_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/games_db.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/db/scenes.db.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/api/db_endpoint.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/db/users_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/users_db.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/lib/auth/validator.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/auth/validator.py" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/lib/llm/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/llm/generator.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/llm/api/dialogue_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/llm/api/dialogue_endpoint.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -80,11 +81,11 @@
+       <recent name="D:\screenwriter-backend\src\api" />
+     </key>
+     <key name="MoveFile.RECENT_KEYS">
++      <recent name="D:\screenwriter-backend\db" />
+       <recent name="D:\screenwriter-backend\resources" />
+       <recent name="D:\screenwriter-backend\lib" />
+       <recent name="D:\screenwriter-backend\src\llm" />
+       <recent name="D:\screenwriter-backend" />
+-      <recent name="D:\screenwriter-backend\src" />
+     </key>
+   </component>
+   <component name="RunManager" selected="Python.prompt_builder">
+@@ -406,7 +407,15 @@
+       <option name="project" value="LOCAL" />
+       <updated>1752650929719</updated>
+     </task>
+-    <option name="localTasksCounter" value="32" />
++    <task id="LOCAL-00032" summary="init new architecture for db">
++      <option name="closed" value="true" />
++      <created>1752655774978</created>
++      <option name="number" value="00032" />
++      <option name="presentableId" value="LOCAL-00032" />
++      <option name="project" value="LOCAL" />
++      <updated>1752655774978</updated>
++    </task>
++    <option name="localTasksCounter" value="33" />
+     <servers />
+   </component>
+   <component name="Vcs.Log.Tabs.Properties">
+@@ -421,7 +430,6 @@
+     </option>
+   </component>
+   <component name="VcsManagerConfiguration">
+-    <MESSAGE value="init .env api_key" />
+     <MESSAGE value="refactor architecture main.py" />
+     <MESSAGE value="future app.py edit" />
+     <MESSAGE value="init init.py for poetry" />
+@@ -446,6 +454,7 @@
+     <MESSAGE value="new bug!" />
+     <MESSAGE value="fix and future all work complete!!!!!!!!!! mvp is completed!" />
+     <MESSAGE value="fix logging in db" />
+-    <option name="LAST_COMMIT_MESSAGE" value="fix logging in db" />
++    <MESSAGE value="init new architecture for db" />
++    <option name="LAST_COMMIT_MESSAGE" value="init new architecture for db" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Byte-compiled / optimized / DLL files\n__pycache__/\n*.py[cod]\n*$py.class\n\n# C extensions\n*.so\n\n# Distribution / packaging\n.venv\n.Python\nenv/\nvenv/\nENV/\nenv.bak/\nvenv.bak/\n.build/\ndevelop-eggs/\ndist/\ndownloads/\neggs/\n.eggs/\nlib/\nlib64/\nparts/\nsdist/\nvar/\n*.egg-info/\n.installed.cfg\n*.egg\npip-wheel-metadata/\n*.whl\n\n# PyInstaller\n# Usually contains build artifacts\n*.manifest\n*.spec\n\n# Installer logs\npip-log.txt\npip-delete-this-directory.txt\n\n# Unit test / coverage reports\nhtmlcov/\n.tox/\n.nox/\n.coverage\n.coverage.*\n.cache\nnosetests.xml\ncoverage.xml\n*.cover\n*.py,cover\n.hypothesis/\n.pytest_cache/\ntest-results/\n\n# MyPy\n.mypy_cache/\n.dmypy.json\ndmypy.json\n\n# Pyre\n.pyre/\n\n# Pytype\n.pytype/\n\n# Cython debug symbols\ncython_debug/\n\n# Django stuff:\n*.log\nlocal_settings.py\ndb.sqlite3\ndb.sqlite3-journal\n\n# Flask stuff:\ninstance/\n.webassets-cache\n\n# FastAPI / general\n*.db\n*.sqlite3\n\n# VS Code\n.vscode/\n\n# macOS\n.DS_Store\n\n# Logs\n*.log\n\n# dotenv\n.env\n.env.*\n!.env.example\n\n# Docker\n*.pid\ndocker-compose.override.yml\n\n.python-version\nexperiments/\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gitignore b/.gitignore
+--- a/.gitignore	(revision da3e5e3e61e82b35a0d0cbf2198b1d4a577ba7f3)
++++ b/.gitignore	(date 1752663823652)
+@@ -20,7 +20,6 @@
+ downloads/
+ eggs/
+ .eggs/
+-lib/
+ lib64/
+ parts/
+ sdist/
+@@ -103,3 +102,4 @@
+ 
+ .python-version
+ experiments/
++.idea
+\ No newline at end of file
+diff --git a/db/scenes.db.py b/src/db/api/db_endpoint.py
+rename from db/scenes.db.py
+rename to src/db/api/db_endpoint.py
