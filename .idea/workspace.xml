@@ -4,10 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="72443925-fcfb-47db-979b-a4bb7ee3abb0" name="Changes" comment="future database.py and users_db complete">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/characters_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/characters_db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/dialogues_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/dialogues_db.py" afterDir="false" />
+    <list default="true" id="72443925-fcfb-47db-979b-a4bb7ee3abb0" name="Changes" comment="future characters_db.py and dialogues_db.py, but is not using in future:(">
+      <change afterPath="$PROJECT_DIR$/db/db_CRUD/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/characters_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_CRUD/characters_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/dialogues_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_CRUD/dialogues_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/games_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_CRUD/games_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/scenes_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_CRUD/scenes_db.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,11 +76,11 @@
       <recent name="D:\screenwriter-backend\src\api" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\screenwriter-backend\db\db_CRUD" />
       <recent name="D:\screenwriter-backend\db" />
       <recent name="D:\screenwriter-backend\resources" />
       <recent name="D:\screenwriter-backend\lib" />
       <recent name="D:\screenwriter-backend\src\llm" />
-      <recent name="D:\screenwriter-backend" />
     </key>
   </component>
   <component name="RunManager" selected="Python.prompt_builder">
@@ -432,7 +434,15 @@
       <option name="project" value="LOCAL" />
       <updated>1752667418573</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="future characters_db.py and dialogues_db.py, but is not using in future:(">
+      <option name="closed" value="true" />
+      <created>1752671278386</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1752671278386</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -447,7 +457,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="init schemas.py" />
     <MESSAGE value="init new files" />
     <MESSAGE value="refactor .gitignore" />
     <MESSAGE value="init" />
@@ -472,6 +481,7 @@
     <MESSAGE value="future users_db.py" />
     <MESSAGE value="future games_db and scenes_db complete" />
     <MESSAGE value="future database.py and users_db complete" />
-    <option name="LAST_COMMIT_MESSAGE" value="future database.py and users_db complete" />
+    <MESSAGE value="future characters_db.py and dialogues_db.py, but is not using in future:(" />
+    <option name="LAST_COMMIT_MESSAGE" value="future characters_db.py and dialogues_db.py, but is not using in future:(" />
   </component>
 </project>

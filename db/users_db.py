@@ -1,20 +1,22 @@
 from db.database import Database
 from db.logging import logger
-
+import json
 
 class Users:
     def __init__(self, db: Database):
         self.db = db
 
-    def create_user(self, mail: str, name: str, surname: str, password_hash: str):
+    def create_user(self, mail: str, name: str, surname: str, password_hash: str, data: dict = None):
+        if data is None:
+            data = {"games": []}
         try:
             self.db.cursor.execute(
                 """
-                INSERT INTO users (mail, name, surname, password_hash)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO users (mail, name, surname, password_hash, data)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING id;
                 """,
-                (mail, name, surname, password_hash)
+                (mail, name, surname, password_hash, json.dumps(data))
             )
             user_id = self.db.cursor.fetchone()["id"]
             self.db.conn.commit()
@@ -41,6 +43,28 @@ class Users:
             return user
         except Exception as e:
             logger.error(f"Error when receiving user by id {user_id}: {e}")
+
+    def get_user_data(self, user_id: int):
+        try:
+            self.db.cursor.execute("SELECT data FROM users WHERE id = %s;", (user_id,))
+            row = self.db.cursor.fetchone()
+            logger.info(f"Received data for user {user_id}")
+            return row["data"] if row else None
+        except Exception as e:
+            logger.error(f"Error when receiving data for user {user_id}: {e}")
+
+    def update_user_data(self, user_id: int, new_data: dict):
+        try:
+            self.db.cursor.execute(
+                "UPDATE users SET data = %s WHERE id = %s;",
+                (json.dumps(new_data), user_id)
+            )
+            self.db.conn.commit()
+            logger.info(f"Updated data for user {user_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating data for user {user_id}: {e}")
+            self.db.conn.rollback()
 
     def update_user_name(self, user_id: int, new_name: str, new_surname: str):
         try:
