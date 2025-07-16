@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Настройка логирования
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
@@ -17,12 +17,12 @@ logging.basicConfig(
 )
 
 class Database:
-    def __init__(self, dbname=None, user=None, password=None, host=None, port=None):
-        self.dbname = dbname or os.getenv('DB_NAME', 'screenwriter_db')
-        self.user = user or os.getenv('DB_USER', 'postgres')
-        self.password = password or os.getenv('DB_PASSWORD', '')
-        self.host = host or os.getenv('DB_HOST', 'localhost')
-        self.port = port or int(os.getenv('DB_PORT', 5432))
+    def __init__(self):
+        self.dbname = os.getenv('DB_NAME')
+        self.user = os.getenv('DB_USER')
+        self.password = os.getenv('DB_PASSWORD')
+        self.host = os.getenv('DB_HOST')
+        self.port = int(os.getenv('DB_PORT'))
         
         try:
             self.conn = psycopg2.connect(
@@ -38,47 +38,16 @@ class Database:
             logging.error(f"Error connecting to the database: {e}")
             raise
 
-    # ---------- USERS ----------
-    def create_user(self, mail, name, surname, password_hash):
-        try:
-            self.cursor.execute(
-                """INSERT INTO users (mail, name, surname, password_hash)
-                   VALUES (%s, %s, %s, %s) RETURNING id;""",
-                (mail, name, surname, password_hash)
-            )
-            user_id = self.cursor.fetchone()['id']
-            self.conn.commit()
-            logging.info(f"The user has been created: {user_id} ({name})")
-            return user_id
-        except Exception as e:
-            logging.error(f"Error when creating a user {name}: {e}")
+    def commit(self):
+        self.conn.commit()
 
-    def get_user_by_name(self, name):
+    def close(self):
         try:
-            self.cursor.execute("SELECT * FROM users WHERE name = %s;", (name,))
-            user = self.cursor.fetchone()
-            logging.info(f"Received a user by name: {name}")
-            return user
+            self.cursor.close()
+            self.conn.close()
+            logging.info("The database connection is closed")
         except Exception as e:
-            logging.error(f"Error when receiving the user {name}: {e}")
-
-    def update_user_name(self, user_id, new_name):
-        try:
-            self.cursor.execute(
-                "UPDATE users SET name = %s WHERE id = %s;", (new_name, user_id)
-            )
-            self.conn.commit()
-            logging.info(f"User name {user_id} updated to {new_name}")
-        except Exception as e:
-            logging.error(f"Error updating the username {user_id}: {e}")
-
-    def delete_user(self, user_id):
-        try:
-            self.cursor.execute("DELETE FROM users WHERE id = %s;", (user_id,))
-            self.conn.commit()
-            logging.info(f"The user has been deleted: {user_id}")
-        except Exception as e:
-            logging.error(f"Error when deleting a user {user_id}: {e}")
+            logging.error(f"Error closing the connection: {e}")
 
     def get_user_by_mail(self, mail):
         try:
@@ -217,11 +186,3 @@ class Database:
         except Exception as e:
             logging.error(f"Error when creating a character: {e}")
 
-    # ---------- GENERAL ----------
-    def close(self):
-        try:
-            self.cursor.close()
-            self.conn.close()
-            logging.info("The database connection is closed")
-        except Exception as e:
-            logging.error(f"Error closing the connection: {e}")
