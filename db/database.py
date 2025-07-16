@@ -33,9 +33,9 @@ class Database:
                 port=self.port
             )
             self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
-            logging.info(f"Подключение к базе данных успешно: {self.host}:{self.port}/{self.dbname}")
+            logging.info(f"Connection to the database is successful: {self.host}:{self.port}/{self.dbname}")
         except Exception as e:
-            logging.error(f"Ошибка при подключении к БД: {e}")
+            logging.error(f"Error connecting to the database: {e}")
             raise
 
     # ---------- USERS ----------
@@ -48,19 +48,19 @@ class Database:
             )
             user_id = self.cursor.fetchone()['id']
             self.conn.commit()
-            logging.info(f"Пользователь создан: {user_id} ({name})")
+            logging.info(f"The user has been created: {user_id} ({name})")
             return user_id
         except Exception as e:
-            logging.error(f"Ошибка при создании пользователя {name}: {e}")
+            logging.error(f"Error when creating a user {name}: {e}")
 
     def get_user_by_name(self, name):
         try:
             self.cursor.execute("SELECT * FROM users WHERE name = %s;", (name,))
             user = self.cursor.fetchone()
-            logging.info(f"Получен пользователь по имени: {name}")
+            logging.info(f"Received a user by name: {name}")
             return user
         except Exception as e:
-            logging.error(f"Ошибка при получении пользователя {name}: {e}")
+            logging.error(f"Error when receiving the user {name}: {e}")
 
     def update_user_name(self, user_id, new_name):
         try:
@@ -68,26 +68,26 @@ class Database:
                 "UPDATE users SET name = %s WHERE id = %s;", (new_name, user_id)
             )
             self.conn.commit()
-            logging.info(f"Имя пользователя {user_id} обновлено на {new_name}")
+            logging.info(f"User name {user_id} updated to {new_name}")
         except Exception as e:
-            logging.error(f"Ошибка при обновлении имени пользователя {user_id}: {e}")
+            logging.error(f"Error updating the username {user_id}: {e}")
 
     def delete_user(self, user_id):
         try:
             self.cursor.execute("DELETE FROM users WHERE id = %s;", (user_id,))
             self.conn.commit()
-            logging.info(f"Пользователь удалён: {user_id}")
+            logging.info(f"The user has been deleted: {user_id}")
         except Exception as e:
-            logging.error(f"Ошибка при удалении пользователя {user_id}: {e}")
+            logging.error(f"Error when deleting a user {user_id}: {e}")
 
     def get_user_by_mail(self, mail):
         try:
             self.cursor.execute("SELECT * FROM users WHERE mail = %s;", (mail,))
             user = self.cursor.fetchone()
-            logging.info(f"Получен пользователь с почтой: {mail}")
+            logging.info(f"Received a user with an email: {mail}")
             return user
         except Exception as e:
-            logging.error(f"Ошибка при получении пользователя {mail}: {e}")
+            logging.error(f"Error when receiving the user {mail}: {e}")
     # ---------- GAMES ----------
     def create_game(self, user_id, title, technology_level=None, magic=None):
         try:
@@ -98,19 +98,19 @@ class Database:
             )
             game_id = self.cursor.fetchone()['id']
             self.conn.commit()
-            logging.info(f"Игра создана: {game_id} ({title}) для пользователя {user_id}")
+            logging.info(f"The game was created by: {game_id} ({title}) for the user {user_id}")
             return game_id
         except Exception as e:
-            logging.error(f"Ошибка при создании игры: {e}")
+            logging.error(f"Error when creating the game: {e}")
 
     def get_games_by_user(self, user_id):
         try:
             self.cursor.execute("SELECT * FROM games WHERE user_id = %s;", (user_id,))
             games = self.cursor.fetchall()
-            logging.info(f"Получены игры пользователя {user_id}: {len(games)} шт.")
+            logging.info(f"User's games have been received {user_id}: {len(games)} шт.")
             return games
         except Exception as e:
-            logging.error(f"Ошибка при получении игр пользователя {user_id}: {e}")
+            logging.error(f"Error when receiving user's games {user_id}: {e}")
 
     def update_game_title(self, game_id, new_title):
         try:
@@ -118,17 +118,17 @@ class Database:
                 "UPDATE games SET title = %s WHERE id = %s;", (new_title, game_id)
             )
             self.conn.commit()
-            logging.info(f"Название игры {game_id} обновлено на '{new_title}'")
+            logging.info(f"The name of the game {game_id} has been updated to '{new_title}'")
         except Exception as e:
-            logging.error(f"Ошибка при обновлении названия игры {game_id}: {e}")
+            logging.error(f"Error updating the game name {game_id}: {e}")
 
     def delete_game(self, game_id):
         try:
             self.cursor.execute("DELETE FROM games WHERE id = %s;", (game_id,))
             self.conn.commit()
-            logging.info(f"Игра удалена: {game_id}")
+            logging.info(f"Game deleted: {game_id}")
         except Exception as e:
-            logging.error(f"Ошибка при удалении игры {game_id}: {e}")
+            logging.error(f"Error deleting the game {game_id}: {e}")
 
     # ---------- SCENES ----------
     def create_scene(self, game_id, title):
@@ -140,10 +140,10 @@ class Database:
             )
             scene_id = self.cursor.fetchone()['id']
             self.conn.commit()
-            logging.info(f"Сцена создана: {scene_id} для игры {game_id}")
+            logging.info(f"The scene was created: {scene_id} for the game {game_id}")
             return scene_id
         except Exception as e:
-            logging.error(f"Ошибка при создании сцены: {e}")
+            logging.error(f"Error when creating the scene: {e}")
 
     def update_scene_title(self, scene_id, new_title):
         try:
@@ -151,17 +151,17 @@ class Database:
                 "UPDATE scenes SET title = %s WHERE id = %s;", (new_title, scene_id)
             )
             self.conn.commit()
-            logging.info(f"Название сцены {scene_id} обновлено на '{new_title}'")
+            logging.info(f"The name of the scene {scene_id} has been updated to '{new_title}'")
         except Exception as e:
-            logging.error(f"Ошибка при обновлении сцены {scene_id}: {e}")
+            logging.error(f"Error updating the scene {scene_id}: {e}")
 
     def delete_scene(self, scene_id):
         try:
             self.cursor.execute("DELETE FROM scenes WHERE id = %s;", (scene_id,))
             self.conn.commit()
-            logging.info(f"Сцена удалена: {scene_id}")
+            logging.info(f"The scene has been deleted: {scene_id}")
         except Exception as e:
-            logging.error(f"Ошибка при удалении сцены {scene_id}: {e}")
+            logging.error(f"Error when deleting a scene  {scene_id}: {e}")
 
     # ---------- DIALOGUES ----------
     def create_dialogue(self, scene_id, title, data):
@@ -173,10 +173,10 @@ class Database:
             )
             dialogue_id = self.cursor.fetchone()['id']
             self.conn.commit()
-            logging.info(f"Диалог создан: {dialogue_id} для сцены {scene_id}")
+            logging.info(f"Dialog created: {dialogue_id} for the scene {scene_id}")
             return dialogue_id
         except Exception as e:
-            logging.error(f"Ошибка при создании диалога: {e}")
+            logging.error(f"Error when creating the dialog: {e}")
 
     def update_dialogue_data(self, dialogue_id, new_data):
         try:
@@ -185,17 +185,17 @@ class Database:
                 (json.dumps(new_data), dialogue_id)
             )
             self.conn.commit()
-            logging.info(f"Данные диалога {dialogue_id} обновлены")
+            logging.info(f"Dialog data {dialogue_id} updated")
         except Exception as e:
-            logging.error(f"Ошибка при обновлении данных диалога {dialogue_id}: {e}")
+            logging.error(f"Error updating dialog data {dialogue_id}: {e}")
 
     def delete_dialogue(self, dialogue_id):
         try:
             self.cursor.execute("DELETE FROM dialogues WHERE id = %s;", (dialogue_id,))
             self.conn.commit()
-            logging.info(f"Диалог удалён: {dialogue_id}")
+            logging.info(f"Dialog deleted: {dialogue_id}")
         except Exception as e:
-            logging.error(f"Ошибка при удалении диалога {dialogue_id}: {e}")
+            logging.error(f"Error deleting the dialog {dialogue_id}: {e}")
 
     # ---------- CHARACTERS ----------
     def create_character(self, game_id, is_npc, name, profession, goal,
@@ -212,35 +212,16 @@ class Database:
             )
             character_id = self.cursor.fetchone()['id']
             self.conn.commit()
-            logging.info(f"Персонаж создан: {character_id} ({name})")
+            logging.info(f"The character is created: {character_id} ({name})")
             return character_id
         except Exception as e:
-            logging.error(f"Ошибка при создании персонажа: {e}")
-
-    def update_character_goal(self, character_id, new_goal):
-        try:
-            self.cursor.execute(
-                "UPDATE characters SET goal = %s WHERE id = %s;",
-                (new_goal, character_id)
-            )
-            self.conn.commit()
-            logging.info(f"Цель персонажа {character_id} обновлена")
-        except Exception as e:
-            logging.error(f"Ошибка при обновлении цели персонажа {character_id}: {e}")
-
-    def delete_character(self, character_id):
-        try:
-            self.cursor.execute("DELETE FROM characters WHERE id = %s;", (character_id,))
-            self.conn.commit()
-            logging.info(f"Персонаж удалён: {character_id}")
-        except Exception as e:
-            logging.error(f"Ошибка при удалении персонажа {character_id}: {e}")
+            logging.error(f"Error when creating a character: {e}")
 
     # ---------- GENERAL ----------
     def close(self):
         try:
             self.cursor.close()
             self.conn.close()
-            logging.info("Соединение с базой данных закрыто")
+            logging.info("The database connection is closed")
         except Exception as e:
-            logging.error(f"Ошибка при закрытии соединения: {e}")
+            logging.error(f"Error closing the connection: {e}")
