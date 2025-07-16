@@ -102,4 +102,3 @@ docker-compose.override.yml
 
 .python-version
 experiments/
-.idea

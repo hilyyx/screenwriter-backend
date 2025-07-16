@@ -23,7 +23,7 @@ class Database:
         self.password = os.getenv('DB_PASSWORD')
         self.host = os.getenv('DB_HOST')
         self.port = int(os.getenv('DB_PORT'))
-        
+
         try:
             self.conn = psycopg2.connect(
                 dbname=self.dbname,
@@ -38,9 +38,6 @@ class Database:
             logging.error(f"Error connecting to the database: {e}")
             raise
 
-    def commit(self):
-        self.conn.commit()
-
     def close(self):
         try:
             self.cursor.close()
@@ -48,15 +45,7 @@ class Database:
             logging.info("The database connection is closed")
         except Exception as e:
             logging.error(f"Error closing the connection: {e}")
-
-    def get_user_by_mail(self, mail):
-        try:
-            self.cursor.execute("SELECT * FROM users WHERE mail = %s;", (mail,))
-            user = self.cursor.fetchone()
-            logging.info(f"Received a user with an email: {mail}")
-            return user
-        except Exception as e:
-            logging.error(f"Error when receiving the user {mail}: {e}")
+'''
     # ---------- GAMES ----------
     def create_game(self, user_id, title, technology_level=None, magic=None):
         try:
@@ -185,4 +174,4 @@ class Database:
             return character_id
         except Exception as e:
             logging.error(f"Error when creating a character: {e}")
-
+'''

@@ -16,9 +16,9 @@ class DialogGenerator:
         load_dotenv()
         self.api_key = os.getenv("DEEPSEEK_API_KEY")
         self.structure_model_type = os.getenv("MODEL_TYPE_STRUCTURE")
-        self.structure_model_max_tokens = int(os.getenv("STRUCTURE_MODEL_MAX_TOKENS"))
+        self.structure_model_max_tokens = int(os.getenv("STRUCTURE_MODEL_MAX_TOKENS", 8192))
         self.dialogue_model_type = os.getenv("MODEL_TYPE_DIALOGUE")
-        self.dialogue_model_max_tokens = int(os.getenv("DIALOGUE_MODEL_MAX_TOKENS"))
+        self.dialogue_model_max_tokens = int(os.getenv("DIALOGUE_MODEL_MAX_TOKENS", 8192))
         self.client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
 
         self.params = params
