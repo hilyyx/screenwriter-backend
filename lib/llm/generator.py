@@ -23,7 +23,7 @@ class DialogGenerator:
 
         self.params = params
         self.npc = self.params["npc"]
-        self.hero = self.params["npc"]
+        self.hero = self.params["hero"]
         self.goals = self.params["goals"]
         self.llm_settings = LLMSettings()
         self.dialog_graph = None
