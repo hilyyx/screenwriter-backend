@@ -1,10 +1,12 @@
 import bcrypt
 from db.database import Database
 from lib.auth.validator import validate_email, validate_password
+from db.users_db import Users
 
 class Auth:
     def __init__(self):
-        self.db = Database()
+        self.db1 = Database()
+        self.db = Users(self.db1)
 
     def register(self, mail, name, surname, password):
         try:
@@ -12,7 +14,7 @@ class Auth:
             password = validate_password(password)
         except ValueError:
             return None, ValueError
-        user = self.db.get_user_by_name(name)
+        user = self.db.get_user_by_mail(mail)
         if user:
             return None, 'User created earlier'
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')

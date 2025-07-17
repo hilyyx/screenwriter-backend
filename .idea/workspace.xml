@@ -4,12 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="72443925-fcfb-47db-979b-a4bb7ee3abb0" name="Changes" comment="future characters_db.py and dialogues_db.py, but is not using in future:(">
-      <change afterPath="$PROJECT_DIR$/db/db_CRUD/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/characters_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_CRUD/characters_db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/dialogues_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_CRUD/dialogues_db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/games_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_CRUD/games_db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/scenes_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_CRUD/scenes_db.py" afterDir="false" />
+    <list default="true" id="72443925-fcfb-47db-979b-a4bb7ee3abb0" name="Changes" comment="fix users_db.py">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/schemas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/api/db_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/api/db_endpoint.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -442,7 +441,15 @@
       <option name="project" value="LOCAL" />
       <updated>1752671278386</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="fix users_db.py">
+      <option name="closed" value="true" />
+      <created>1752672100235</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1752672100235</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -457,7 +464,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="init new files" />
     <MESSAGE value="refactor .gitignore" />
     <MESSAGE value="init" />
     <MESSAGE value="init .md" />
@@ -482,6 +488,7 @@
     <MESSAGE value="future games_db and scenes_db complete" />
     <MESSAGE value="future database.py and users_db complete" />
     <MESSAGE value="future characters_db.py and dialogues_db.py, but is not using in future:(" />
-    <option name="LAST_COMMIT_MESSAGE" value="future characters_db.py and dialogues_db.py, but is not using in future:(" />
+    <MESSAGE value="fix users_db.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix users_db.py" />
   </component>
 </project>
