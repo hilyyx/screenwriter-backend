@@ -4,10 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="72443925-fcfb-47db-979b-a4bb7ee3abb0" name="Changes" comment="fix users_db.py">
+    <list default="true" id="72443925-fcfb-47db-979b-a4bb7ee3abb0" name="Changes" comment="fix auth.py">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/users_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db/users_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/auth/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/auth/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/auth/validator.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/auth/validator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/models/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/schemas.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth/api/auth_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth/api/auth_endpoint.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/db/api/db_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/api/db_endpoint.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -63,7 +68,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/screenwriter-backend/src/auth/api&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.Python&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -449,7 +454,15 @@
       <option name="project" value="LOCAL" />
       <updated>1752672100235</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="fix auth.py">
+      <option name="closed" value="true" />
+      <created>1752751422555</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1752751422555</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -464,7 +477,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor .gitignore" />
     <MESSAGE value="init" />
     <MESSAGE value="init .md" />
     <MESSAGE value="refactor architecture" />
@@ -489,6 +501,7 @@
     <MESSAGE value="future database.py and users_db complete" />
     <MESSAGE value="future characters_db.py and dialogues_db.py, but is not using in future:(" />
     <MESSAGE value="fix users_db.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix users_db.py" />
+    <MESSAGE value="fix auth.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix auth.py" />
   </component>
 </project>

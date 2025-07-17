@@ -8,7 +8,7 @@ auth_service = Auth()
 
 @router.post("/register")
 def register(user: UserRegisterRequest):
-    user_id, error = auth_service.register(user.mail, user.name, user.surname, user.password)
+    user_id, error = auth_service.register(user.mail, user.name, user.surname, user.password, user.is_deleted, user.data)
     if error:
         raise HTTPException(status_code=400, detail=error)
     return UserResponse(id=user_id, mail=user.mail, name=user.name, surname=user.surname)

@@ -1,3 +1,5 @@
+from pydantic import EmailStr
+
 from db.database import Database
 from db.logging import logger
 import json
@@ -6,17 +8,24 @@ class Users:
     def __init__(self, db: Database):
         self.db = db
 
-    def create_user(self, mail: str, name: str, surname: str, password_hash: str, data: dict = None):
+    def create_user(self, mail, name, surname, password_hash, is_deleted=False, data=None):
+        if not mail or not name or not surname or not password_hash:
+            logger.error(f"Error when creating user: missing required fields")
+            return None
         if data is None:
             data = {"games": []}
         try:
+            if not isinstance(data, str):
+                data_json = json.dumps(data)
+            else:
+                data_json = data
             self.db.cursor.execute(
                 """
-                INSERT INTO users (mail, name, surname, password_hash, data)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO users (mail, name, surname, password_hash, is_deleted, data)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id;
                 """,
-                (mail, name, surname, password_hash, json.dumps(data))
+                (mail, name, surname, password_hash, is_deleted, data_json)
             )
             user_id = self.db.cursor.fetchone()["id"]
             self.db.conn.commit()
@@ -26,7 +35,7 @@ class Users:
             logger.error(f"Error when creating user {name}: {e}")
             self.db.conn.rollback()
 
-    def get_user_by_mail(self, mail: str):
+    def get_user_by_mail(self, mail: EmailStr):
         try:
             self.db.cursor.execute("SELECT * FROM users WHERE mail = %s;", (mail,))
             user = self.db.cursor.fetchone()
@@ -94,7 +103,8 @@ class Users:
 
     def delete_user(self, user_id: int):
         try:
-            self.db.cursor.execute("DELETE FROM users WHERE id = %s;", (user_id,))
+            self.db.cursor.execute("UPDATE users SET is_deleted = %s WHERE id = %s;",
+                (True, user_id))
             self.db.conn.commit()
             logger.info(f"User {user_id} deleted")
             return True
