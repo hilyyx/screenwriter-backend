@@ -40,6 +40,8 @@ class Users:
             self.db.cursor.execute("SELECT * FROM users WHERE mail = %s;", (mail,))
             user = self.db.cursor.fetchone()
             logger.info(f"Received user by mail: {mail}")
+            if user and user.get('is_deleted'):
+                return None
             return user
         except Exception as e:
             logger.error(f"Error when receiving user by mail {mail}: {e}")
@@ -49,6 +51,8 @@ class Users:
             self.db.cursor.execute("SELECT * FROM users WHERE id = %s;", (user_id,))
             user = self.db.cursor.fetchone()
             logger.info(f"Received user by id: {user_id}")
+            if user and user.get('is_deleted'):
+                return None
             return user
         except Exception as e:
             logger.error(f"Error when receiving user by id {user_id}: {e}")
@@ -110,4 +114,26 @@ class Users:
             return True
         except Exception as e:
             logger.error(f"Error deleting user {user_id}: {e}")
+            self.db.conn.rollback()
+
+    def reactivate_user(self, mail, name, surname, password_hash, data=None):
+        try:
+            if data is None:
+                data = {"games": []}
+            if not isinstance(data, str):
+                data_json = json.dumps(data)
+            else:
+                data_json = data
+            self.db.cursor.execute(
+                """
+                UPDATE users SET name = %s, surname = %s, password_hash = %s, is_deleted = %s, data = %s WHERE mail = %s RETURNING id;
+                """,
+                (name, surname, password_hash, False, data_json, mail)
+            )
+            user_id = self.db.cursor.fetchone()["id"]
+            self.db.conn.commit()
+            logger.info(f"User reactivated: {user_id} ({name})")
+            return user_id
+        except Exception as e:
+            logger.error(f"Error reactivating user {name}: {e}")
             self.db.conn.rollback()

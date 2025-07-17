@@ -14,8 +14,12 @@ class Auth:
         except ValueError as e:
             return None, str(e)
 
-        user = self.db.get_user_by_mail(mail)
+        user = self.db.db.get_user_by_mail(mail, include_deleted=True) if hasattr(self.db.db, 'get_user_by_mail') else self.db.get_user_by_mail(mail)
         if user:
+            if user.get('is_deleted'):
+                # Реактивация пользователя
+                user_id = self.db.reactivate_user(mail, name, surname, bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'), data)
+                return user_id, None
             return None, "User already exists"
 
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -32,6 +36,8 @@ class Auth:
 
         user = self.db.get_user_by_mail(mail)
         if not user:
+            return None, "User not found"
+        if user.get('is_deleted'):
             return None, "User not found"
 
         password_hash = user['password_hash']

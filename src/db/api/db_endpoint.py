@@ -25,6 +25,9 @@ def get_user_by_mail(mail: EmailStr):
 
 @router.get("/users/{user_id}/data")
 def get_user_data(user_id: int):
+    user = user_service.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     data = user_service.get_user_data(user_id)
     if data:
         return {"data": data}
@@ -32,6 +35,9 @@ def get_user_data(user_id: int):
 
 @router.post("/users/{user_id}/data")
 def update_user_data(new_data: UserUpdateData):
+    user = user_service.get_user_by_id(new_data.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     success = user_service.update_user_data(new_data.user_id, new_data.data)
     if success:
         return {"message": "User data updated successfully"}
@@ -40,6 +46,9 @@ def update_user_data(new_data: UserUpdateData):
 
 @router.put("/users/{user_id}/name")
 def update_user_name(user_id: int, new_name: UserUpdateName):
+    user = user_service.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     success = user_service.update_user_name(user_id, new_name.name, new_name.surname)
     if success:
         return {"message": "User name updated successfully"}
@@ -48,6 +57,9 @@ def update_user_name(user_id: int, new_name: UserUpdateName):
 
 @router.put("/users/{user_id}/password")
 def update_user_password(user_id: int, new_pass: UserUpdatePassword):
+    user = user_service.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     success = user_service.update_user_password(user_id, new_pass.password_hash)
     if success:
         return {"message": "Password updated successfully"}
@@ -56,6 +68,9 @@ def update_user_password(user_id: int, new_pass: UserUpdatePassword):
 
 @router.post("/users/{user_id}")
 def delete_user(delete_users: DeleteUser):
+    user = user_service.get_user_by_id(delete_users.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     success = user_service.delete_user(delete_users.user_id)
     if success:
         return {"message": "User deleted successfully"}
