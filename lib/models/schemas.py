@@ -1,6 +1,6 @@
-from typing import List, Dict, Optional
+from typing import List, Dict
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 #-------СОЗДАНИЕ ПАРАМЕТРОВ ИГРЫ-----------#
@@ -16,21 +16,6 @@ class GoalParams(BaseModel):
     type: str
     object: str
     condition: str
-
-class Dialogue(BaseModel):
-    id: str
-    info: str
-    line: str
-
-class DialogueData(BaseModel):
-    id: str
-    line: str
-    to: Dialogue
-
-class DialogueResponse(BaseModel):
-    id: str
-    name: str
-    data: List[DialogueData]
 
 class Params(BaseModel):
     npc: GlobalParams
@@ -52,7 +37,7 @@ class Params(BaseModel):
 
 #-------РЕГИСТРАЦИЯ И ВХОД-----------#
 class UserRegisterRequest(BaseModel):
-    mail: EmailStr
+    mail: str
     name: str
     surname: str
     password: str
@@ -63,19 +48,12 @@ class UserLoginRequest(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    mail: EmailStr
+    mail: str
     name: str
     surname: str
 
 
 #-------РУЧКИ ДЛЯ БД-----------#
-class UserRegister(BaseModel):
-    mail: EmailStr
-    name: str
-    surname: str
-    password_hash: str
-    data: Optional[Dict] = None
-
 class UserUpdateName(BaseModel):
     name: str
     surname: str
@@ -86,6 +64,3 @@ class UserUpdatePassword(BaseModel):
 class UserUpdateData(BaseModel):
     user_id: int
     data: Dict
-
-class DeleteUser(BaseModel):
-    user_id: int
