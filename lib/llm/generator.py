@@ -14,15 +14,15 @@ import copy
 load_dotenv()
 
 def graph_to_JSON(dialog_graph):
-        structure = {"data": []}
-        for node in list(dialog_graph.nodes):
-            structure["data"].append(dialog_graph.nodes[node])
-            structure["data"][-1]["id"] = node
-            structure["data"][-1]["to"] = []
-            for next_node in list(dialog_graph.adj[node].keys()):
-                structure["data"][-1]["to"].append(dialog_graph.edges[(node, next_node)])
-                structure["data"][-1]["to"][-1]["id"] = next_node
-        return structure
+    structure = {"data": []}
+    for node in list(dialog_graph.nodes):
+        structure["data"].append(dialog_graph.nodes[node])
+        structure["data"][-1]["id"] = node  
+        structure["data"][-1]["to"] = []
+        for next_node in list(dialog_graph.adj[node].keys()):
+            structure["data"][-1]["to"].append(dialog_graph.edges[(node, next_node)])
+            structure["data"][-1]["to"][-1]["id"] = next_node
+    return structure
 
 def JSON_to_graph(structure):
     dialog_graph = nx.DiGraph()
@@ -56,15 +56,30 @@ class Orchestrator:
         print("--Контент после валидации--", graph_to_JSON(dialog_graph), sep = "\n", end = "\n\n=====\n\n")
         dialog_regenerator.regenerate_content(dialog_validator, dialog_graph)
         print("--Контент после перегенерации--", graph_to_JSON(dialog_graph), sep = "\n", end = "\n\n=====\n\n")
+        return json.dumps(graph_to_JSON(dialog_graph), indent=4)    
 
 class DialogSettings:
     def __init__(self, params: dict):
+
         self.api_key = os.getenv("DEEPSEEK_API_KEY")
-        self.structure_model_type = os.getenv("MODEL_TYPE_STRUCTURE")
-        self.structure_model_max_tokens = int(os.getenv("STRUCTURE_MODEL_MAX_TOKENS", 8192))
-        self.dialogue_model_type = os.getenv("MODEL_TYPE_DIALOGUE")
-        self.dialogue_model_max_tokens = int(os.getenv("DIALOGUE_MODEL_MAX_TOKENS", 8192))
         self.client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
+
+
+        self.model_type_structure_generation = os.getenv("MODEL_TYPE_STRUCTURE_GENERATION")
+        self.model_type_dialogue_generation = os.getenv("MODEL_TYPE_DIALOGUE_GENERATION")
+        self.model_type_structure_validation = os.getenv("MODEL_TYPE_STRUCTURE_VALIDATION")
+        self.model_type_dialogue_validation = os.getenv("MODEL_TYPE_DIALOGUE_VALIDATION")
+        self.model_type_structure_regeneration = os.getenv("MODEL_TYPE_STRUCTURE_REGENERATION")
+        self.model_type_dialogue_regeneration = os.getenv("MODEL_TYPE_DIALOGUE_REGENERATION")
+
+
+        self.model_max_tokens_structure_generation = int(os.getenv("MODEL_MAX_TOKENS_STRUCTURE_GENERATION", 8192))
+        self.model_max_tokens_dialogue_generation = int(os.getenv("MODEL_MAX_TOKENS_DIALOGUE_GENERATION", 8192))
+        self.model_max_tokens_structure_validation = int(os.getenv("MODEL_MAX_TOKENS_STRUCTURE_VALIDATION", 8192))
+        self.model_max_tokens_dialogue_validation = int(os.getenv("MODEL_MAX_TOKENS_DIALOGUE_VALIDATION", 8192))
+        self.model_max_tokens_structure_regeneration = int(os.getenv("MODEL_MAX_TOKENS_STRUCTURE_REGENERATION", 8192))
+        self.model_max_tokens_dialogue_regeneration = int(os.getenv("MODEL_MAX_TOKENS_DIALOGUE_REGENERATION", 8192))
+
 
         self.params = params
         self.npc = self.params["npc"]
@@ -109,15 +124,13 @@ class DialogGenerator(DialogSettings):
                 )
 
         structure_response = self.client.chat.completions.create(
-            model=self.dialogue_model_type,
+            model=self.model_type_structure_generation,
             messages=[
                 {"role": "system", "content": self.llm_settings.get_system_prompt()},
                 {"role": "user", "content": prompt_structure},
             ],
             stream=False,
-            max_tokens=self.structure_model_max_tokens,
-            temperature=0.6,
-            top_p=0.95,
+            max_tokens=self.model_max_tokens_structure_generation,
             response_format={
                 'type': 'json_object'
             }
@@ -166,13 +179,13 @@ class DialogGenerator(DialogSettings):
                     relation=self.params["NPC_to_hero_relation"]
                 )
             node_content_response = self.client.chat.completions.create(
-                model=self.dialogue_model_type,
+                model=self.model_type_dialogue_generation,
                 messages=[
                     {"role": "system", "content": self.llm_settings.get_system_prompt()},
                     {"role": "user", "content": prompt_nodes_content},
                 ],
                 stream=False,
-                max_tokens=self.structure_model_max_tokens
+                max_tokens=self.model_max_tokens_dialogue_generation 
             )
             dialog_graph.nodes[t]["line"] = node_content_response.choices[0].message.content.strip("\"\'")
             for i in range(0, len(prev_chains)):
@@ -196,7 +209,7 @@ class DialogGenerator(DialogSettings):
                     relation=self.params["hero_to_NPC_relation"]
                 )
             edge_content_response = self.client.chat.completions.create(
-                model="deepseek-chat",
+                model=self.model_type_dialogue_generation,
                 messages=[
                     {"role": "system", "content": self.llm_settings.get_system_prompt()},
                     {"role": "user", "content": prompt_edges_content},
@@ -204,7 +217,8 @@ class DialogGenerator(DialogSettings):
                 stream=False,
                 response_format={
                     'type': 'json_object'
-                }
+                },
+                max_tokens=self.model_max_tokens_dialogue_generation
             )
             edges_meta = json.loads(edge_content_response.choices[0].message.content)["lines"]
             print("--answers--")
@@ -312,13 +326,13 @@ class DialogValidator(DialogSettings):
                 json_metrics = self.llm_settings.get_json_metrics()
         )
         structure_validation_response = self.client.chat.completions.create(
-            model="deepseek-reasoner",
+            model=self.model_type_structure_validation,
             messages=[
                 {"role": "system", "content": self.llm_settings.get_system_prompt()},
                 {"role": "user", "content": prompt_structure_validation},
             ],
             stream=False,
-            max_tokens=20000,
+            max_tokens=self.model_max_tokens_structure_validation,
             response_format={
                 'type': 'json_object'
             }
@@ -350,7 +364,7 @@ class DialogValidator(DialogSettings):
             json_metrics = self.llm_settings.get_json_metrics()
         )  
         validation_content_response = self.client.chat.completions.create(
-            model="deepseek-chat",
+            model=self.model_type_dialogue_validation,
             messages=[
                 {"role": "system", "content": self.llm_settings.get_system_prompt()},
                 {"role": "user", "content": prompt_content_validation},
@@ -358,7 +372,8 @@ class DialogValidator(DialogSettings):
             stream=False,
             response_format={
                 'type': 'json_object'
-            }
+            },
+            max_tokens=self.model_max_tokens_dialogue_validation
         )
         rate_result = json.loads(validation_content_response.choices[0].message.content)["metrics"]
         return rate_result
@@ -463,13 +478,13 @@ class DialogRegenerator(DialogSettings):
                 )
 
         structure_response = self.client.chat.completions.create(
-            model=self.dialogue_model_type,
+            model=self.model_type_structure_regeneration,
             messages=[
                 {"role": "system", "content": self.llm_settings.get_system_prompt()},
                 {"role": "user", "content": prompt_structure},
             ],
             stream=False,
-            max_tokens=self.structure_model_max_tokens,
+            max_tokens=self.model_max_tokens_structure_regeneration,
             temperature=0.6,
             top_p=0.95,
             response_format={
@@ -529,13 +544,13 @@ class DialogRegenerator(DialogSettings):
                     relation=self.params["NPC_to_hero_relation"]
                 )
                 node_content_response = self.client.chat.completions.create(
-                    model=self.dialogue_model_type,
+                    model=self.model_type_dialogue_regeneration,
                     messages=[
                         {"role": "system", "content": self.llm_settings.get_system_prompt()},
                         {"role": "user", "content": prompt_nodes_content},
                     ],
                     stream=False,
-                    max_tokens=self.structure_model_max_tokens
+                    max_tokens=self.model_max_tokens_dialogue_regeneration
                 )
                 dialog_graph.nodes[t]["line"] = node_content_response.choices[0].message.content.strip("\"\'")
                 validation_result = dialog_validator.validate_node_line(dialog_graph, prev_chains, t, copy.deepcopy(list(dialog_graph.adj[t])))
@@ -561,7 +576,7 @@ class DialogRegenerator(DialogSettings):
                     relation=self.params["hero_to_NPC_relation"]
                 )
                 edge_content_response = self.client.chat.completions.create(
-                    model="deepseek-chat",
+                    model=self.model_type_dialogue_regeneration,
                     messages=[
                         {"role": "system", "content": self.llm_settings.get_system_prompt()},
                         {"role": "user", "content": prompt_edges_content},
@@ -569,7 +584,8 @@ class DialogRegenerator(DialogSettings):
                     stream=False,
                     response_format={
                         'type': 'json_object'
-                    }
+                    },
+                    max_tokens=self.model_max_tokens_dialogue_regeneration
                 )
                 edges_meta = json.loads(edge_content_response.choices[0].message.content)["lines"]
                 next_required_replics_new = []
