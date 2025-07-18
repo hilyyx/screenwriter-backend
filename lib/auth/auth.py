@@ -12,9 +12,9 @@ class Auth:
         try:
             password = validate_password(password)
         except ValueError as e:
-            return None, str(e)
+            return None, ""
 
-        user = self.db.db.get_user_by_mail(mail, include_deleted=True) if hasattr(self.db.db, 'get_user_by_mail') else self.db.get_user_by_mail(mail)
+        user = self.db.get_user_by_mail(mail)
         if user:
             if user.get('is_deleted'):
                 # Реактивация пользователя

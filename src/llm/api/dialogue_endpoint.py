@@ -1,6 +1,7 @@
 from fastapi import APIRouter
-from lib.models.schemas import Params, DialogueResponse
+from lib.models.schemas import Params
 from lib.llm.generator import DialogGenerator
+from fastapi import HTTPException
 
 router = APIRouter()
 
@@ -17,7 +18,9 @@ dialogue_controller = DialogueController()
 
 @router.post("/generate", tags=["Dialogue"])
 def generate(params: Params):
-    a = dialogue_controller.generate(params)
-    print(a)
-    return a
+    try:
+        a = dialogue_controller.generate(params)
+        return a
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Dialogue generation error: {str(e)}")
 
