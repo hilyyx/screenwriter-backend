@@ -422,8 +422,14 @@ class DialogValidator(DialogSettings):
         return dialog_graph
     
 class DialogRegenerator(DialogSettings):
-    def regenerate_structure(self, dialog_graph):
-        with open("resources/prompt_structure.txt", encoding='utf-8', mode="r") as prompt_structure:
+    def convert_metrcics(self, metrics):
+        result = []
+        for metric in metrics:
+            result.append(f"{metric} ({metrics[metric]["rate"]}/10) - {metrics[metric]["comment"]}")
+        return result
+
+    def regenerate_structure(self, structure, metrics):
+        with open("resources/prompt_structure_regeneration.txt", encoding='utf-8', mode="r") as prompt_structure:
             prompt_structure = Template(prompt_structure.read()).safe_substitute(
                 json_structure=self.llm_settings.get_structure(),
                 json_node_structure=self.llm_settings.get_node_structure(),
@@ -453,7 +459,9 @@ class DialogRegenerator(DialogSettings):
                 mx_depth=self.params["mx_depth"],
                 mn_depth=self.params["mn_depth"],
                 moods_list=self.llm_settings.get_moods(),
-                goals=self.goals
+                goals=self.goals,
+                structure = structure,
+                comments = self.convert_metrics(metrics)
                 )
 
         structure_response = self.client.chat.completions.create(
@@ -505,35 +513,34 @@ class DialogRegenerator(DialogSettings):
                     next_required_nodes.append(next_node)
                 if next_node not in q and next_node not in used:
                     q.append(next_node)
-            if not dialog_graph.nodes[t].get("line"):
-                validation_result = 0
-                while not validation_result:
-                    with open("resources/prompt_nodes_content.txt", encoding='utf-8', mode="r") as prompt_nodes_content:
-                        prompt_nodes_content = Template(prompt_nodes_content.read()).safe_substitute(
-                        chain="\n = = = = \n".join(prev_chains),
-                        tematic=dialog_graph.nodes[t]["info"],
-                        world_settings=self.params["world_settings"],
-                        name=self.npc["name"],
-                        talk_style=self.npc["talk_style"],
-                        profession=self.npc["profession"],
-                        traits=self.npc["traits"],
-                        scene=self.params["scene"],
-                        extra=self.params["extra"],
-                        look=self.npc["look"],
-                        mood=dialog_graph.nodes[t]["mood"],
-                        relation=self.params["NPC_to_hero_relation"]
-                    )
-                    node_content_response = self.client.chat.completions.create(
-                        model=self.dialogue_model_type,
-                        messages=[
-                            {"role": "system", "content": self.llm_settings.get_system_prompt()},
-                            {"role": "user", "content": prompt_nodes_content},
-                        ],
-                        stream=False,
-                        max_tokens=self.structure_model_max_tokens
-                    )
-                    dialog_graph.nodes[t]["line"] = node_content_response.choices[0].message.content.strip("\"\'")
-                    validation_result = dialog_validator.validate_node_line(prev_chains, t, copy.deepcopy(list(dialog_graph.adj[t])))
+            validation_result = dialog_graph.nodes[t].get("line")
+            while not validation_result:
+                with open("resources/prompt_nodes_content.txt", encoding='utf-8', mode="r") as prompt_nodes_content:
+                    prompt_nodes_content = Template(prompt_nodes_content.read()).safe_substitute(
+                    chain="\n = = = = \n".join(prev_chains),
+                    tematic=dialog_graph.nodes[t]["info"],
+                    world_settings=self.params["world_settings"],
+                    name=self.npc["name"],
+                    talk_style=self.npc["talk_style"],
+                    profession=self.npc["profession"],
+                    traits=self.npc["traits"],
+                    scene=self.params["scene"],
+                    extra=self.params["extra"],
+                    look=self.npc["look"],
+                    mood=dialog_graph.nodes[t]["mood"],
+                    relation=self.params["NPC_to_hero_relation"]
+                )
+                node_content_response = self.client.chat.completions.create(
+                    model=self.dialogue_model_type,
+                    messages=[
+                        {"role": "system", "content": self.llm_settings.get_system_prompt()},
+                        {"role": "user", "content": prompt_nodes_content},
+                    ],
+                    stream=False,
+                    max_tokens=self.structure_model_max_tokens
+                )
+                dialog_graph.nodes[t]["line"] = node_content_response.choices[0].message.content.strip("\"\'")
+                validation_result = dialog_validator.validate_node_line(prev_chains, t, copy.deepcopy(list(dialog_graph.adj[t])))
             for i in range(0, len(prev_chains)):
                 prev_chains[i] += f"**NPC**: {dialog_graph.nodes[t]["line"]}\n"
             while len(next_required_replics):
