@@ -12,10 +12,8 @@ import json
 import copy
 
 load_dotenv()
-class Orchestrator:
-    def __init__(self, params: dict):
-        self.params = params
-    def graph_to_JSON(self, dialog_graph):
+
+def graph_to_JSON(self, dialog_graph):
         structure = {"data": []}
         for node in list(dialog_graph.nodes):
             structure["data"].append(dialog_graph.nodes[node])
@@ -26,20 +24,26 @@ class Orchestrator:
                 structure["data"][-1]["to"].append(dialog_graph.edges[(node, next_node)])
                 structure["data"][-1]["to"][-1]["id"] = next_node
         return structure
-    def JSON_to_graph(self, structure):
-        dialog_graph = nx.DiGraph()
-        for node in structure['data']:
-            # print(node)
-            dialog_graph.add_node(node["id"], **node)
-            for child in node['to']:
-                dialog_graph.add_edge(node["id"], child["id"], **child)
-        return dialog_graph
+
+def JSON_to_graph(self, structure):
+    dialog_graph = nx.DiGraph()
+    for node in structure['data']:
+        # print(node)
+        dialog_graph.add_node(node["id"], **node)
+        for child in node['to']:
+            dialog_graph.add_edge(node["id"], child["id"], **child)
+    return dialog_graph
+
+class Orchestrator:
+    def __init__(self, params: dict):
+        self.params = params
+    
     def create_dialog(self):
         dialog_generator = DialogGenerator(self.params)
         dialog_validator = DialogValidator(self.params)
         dialog_regenerator = DialogRegenerator(self.params)
         structure = dialog_generator.generate_structure()
-        dialog_graph = self.JSON_to_graph(structure)
+        dialog_graph = JSON_to_graph(structure)
         structure_validation = dialog_validator.validate_structure(dialog_graph)
         while not structure_validation[0]:
             structure = dialog_regenerator.regenerate_structure(dialog_graph)
@@ -115,17 +119,8 @@ class DialogGenerator(DialogSettings):
             }
         )
 
-        parsed = json.loads(structure_response.choices[0].message.content)
-        print(parsed)
-        dialog_graph = nx.DiGraph()
-        for node in parsed['data']:
-            # print(node)
-            dialog_graph.add_node(node["id"], **node)
-            for child in node['to']:
-                dialog_graph.add_edge(node["id"], child["id"], **child)
-
-        self.dialog_graph = dialog_graph
-        return dialog_graph
+        structure = json.loads(structure_response.choices[0].message.content)
+        return structure
 
     def generate_content(self, dialog_graph):
         q = deque()
@@ -328,7 +323,7 @@ class DialogValidator(DialogSettings):
         rate_result = json.loads(structure_validation_response.choices[0].message.content)["metrics"]
         return rate_result
     def validate_structure(self, structure):
-        self.validate_structure_alg()
+        structure = graph_to_JSON(self.validate_structure_alg(JSON_to_graph(structure)))
         return self.interpret_rate(self.validate_structure_llm(structure))
     def validate_content_llm(self, line, dialog_chains, character_stats, character):
         with open("prompt_content_validation.txt", encoding = 'utf-8', mode= "r") as prompt_content_validation:
