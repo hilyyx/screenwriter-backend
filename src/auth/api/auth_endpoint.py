@@ -6,14 +6,14 @@ router = APIRouter()
 
 auth_service = Auth()
 
-@router.post("/register")
+@router.post("/register", tags=["Auth"])
 def register(user: UserRegisterRequest):
-    user_id, error = auth_service.register(user.mail, user.name, user.surname, user.password, user.is_deleted, user.data)
+    user_id, error = auth_service.register(user.mail, user.name, user.surname, user.password)
     if error:
         raise HTTPException(status_code=400, detail=error)
     return UserResponse(id=user_id, mail=user.mail, name=user.name, surname=user.surname)
 
-@router.post("/login")
+@router.post("/login", tags=["Auth"])
 def login(user: UserLoginRequest):
     user_data, error = auth_service.login(user.mail, user.password)
     if error:

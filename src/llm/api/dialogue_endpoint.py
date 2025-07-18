@@ -15,7 +15,7 @@ class DialogueController:
 
 dialogue_controller = DialogueController()
 
-@router.post("/generate")
+@router.post("/generate", tags=["Dialogue"])
 def generate(params: Params):
     a = dialogue_controller.generate(params)
     print(a)

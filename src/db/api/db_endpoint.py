@@ -9,21 +9,14 @@ db = Database()
 user_service = Users(db)
 
 
-@router.get("/users/{user_id}")
+@router.get("/users/{user_id}", tags=["Users"])
 def get_user_by_id(user_id: int):
     user = user_service.get_user_by_id(user_id)
     if user:
         return user
     raise HTTPException(status_code=404, detail="User not found")
 
-@router.get("/users/by_mail/{mail}")
-def get_user_by_mail(mail: EmailStr):
-    user = user_service.get_user_by_mail(mail)
-    if user:
-        return user
-    raise HTTPException(status_code=404, detail="User not found")
-
-@router.get("/users/{user_id}/data")
+@router.get("/users/{user_id}/data", tags=["Users"])
 def get_user_data(user_id: int):
     user = user_service.get_user_by_id(user_id)
     if not user:
@@ -33,7 +26,7 @@ def get_user_data(user_id: int):
         return {"data": data}
     raise HTTPException(status_code=404, detail="User data not found")
 
-@router.post("/users/{user_id}/data")
+@router.post("/users/{user_id}/data", tags=["Users"])
 def update_user_data(new_data: UserUpdateData):
     user = user_service.get_user_by_id(new_data.user_id)
     if not user:
@@ -44,7 +37,7 @@ def update_user_data(new_data: UserUpdateData):
     raise HTTPException(status_code=400, detail="Failed to update data")
 
 
-@router.put("/users/{user_id}/name")
+@router.put("/users/{user_id}/name", tags=["Users"])
 def update_user_name(user_id: int, new_name: UserUpdateName):
     user = user_service.get_user_by_id(user_id)
     if not user:
@@ -55,7 +48,7 @@ def update_user_name(user_id: int, new_name: UserUpdateName):
     raise HTTPException(status_code=400, detail="Failed to update name")
 
 
-@router.put("/users/{user_id}/password")
+@router.put("/users/{user_id}/password", tags=["Users"])
 def update_user_password(user_id: int, new_pass: UserUpdatePassword):
     user = user_service.get_user_by_id(user_id)
     if not user:
@@ -66,12 +59,12 @@ def update_user_password(user_id: int, new_pass: UserUpdatePassword):
     raise HTTPException(status_code=400, detail="Failed to update password")
 
 
-@router.post("/users/{user_id}")
-def delete_user(delete_users: DeleteUser):
-    user = user_service.get_user_by_id(delete_users.user_id)
+@router.delete("/users/{user_id}", tags=["Users"])
+def delete_user(user_id: int):
+    user = user_service.get_user_by_id(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    success = user_service.delete_user(delete_users.user_id)
+    success = user_service.delete_user(user_id)
     if success:
         return {"message": "User deleted successfully"}
     raise HTTPException(status_code=400, detail="Failed to delete user")

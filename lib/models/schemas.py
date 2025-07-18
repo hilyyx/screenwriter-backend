@@ -56,8 +56,6 @@ class UserRegisterRequest(BaseModel):
     name: str
     surname: str
     password: str
-    is_deleted: bool = False
-    data: Optional[Dict] = None
 
 class UserLoginRequest(BaseModel):
     mail: str
