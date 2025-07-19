@@ -16,7 +16,7 @@ def get_user_by_id(user_id: int):
         return user
     raise HTTPException(status_code=404, detail="User not found")
 
-@router.get("/users/{user_id}/data", tags=["Users"])
+@router.get("/get/users/{user_id}/data", tags=["Users"])
 def get_user_data(user_id: int):
     user = user_service.get_user_by_id(user_id)
     if not user:
