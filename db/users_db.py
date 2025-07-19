@@ -13,7 +13,19 @@ class Users:
             logger.error(f"Error when creating user: missing required fields")
             return None
         if data is None:
-            data = {"games": []}
+            data = {
+                "games": [],
+                "selectedGameId": None,
+                "selectedSceneId": None,
+                "selectedScriptId": None,
+                "token": None,
+                "user": {
+                    "firstName": "",
+                    "lastName": "",
+                    "email": "",
+                    "avatar": ""
+                }
+            }
         try:
             if not isinstance(data, str):
                 data_json = json.dumps(data)
@@ -119,7 +131,19 @@ class Users:
     def reactivate_user(self, mail, name, surname, password_hash, data=None):
         try:
             if data is None:
-                data = {"games": []}
+                data = {
+                    "games": [],
+                    "selectedGameId": None,
+                    "selectedSceneId": None,
+                    "selectedScriptId": None,
+                    "token": None,
+                    "user": {
+                        "firstName": "",
+                        "lastName": "",
+                        "email": "",
+                        "avatar": ""
+                    }
+                }
             if not isinstance(data, str):
                 data_json = json.dumps(data)
             else:
