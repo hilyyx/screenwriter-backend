@@ -8,7 +8,7 @@ app = FastAPI(title="Screenwriter Dialogue API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://10.82.249.105:5173"],
     allow_credentials=True,
     allow_methods=["*"],  # Разрешаем все методы
     allow_headers=["*"],  # Разрешаем все заголовки
