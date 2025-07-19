@@ -35,6 +35,9 @@ class Params(BaseModel):
     context: str
     goals: List[GoalParams]
 
+#-------ПЕРЕГЕНЕРАЦИЯ-----------#
+class Graph:
+    pass
 #-------РЕГИСТРАЦИЯ И ВХОД-----------#
 class UserRegisterRequest(BaseModel):
     mail: str
@@ -62,5 +65,4 @@ class UserUpdatePassword(BaseModel):
     password_hash: str
 
 class UserUpdateData(BaseModel):
-    user_id: int
     data: Dict

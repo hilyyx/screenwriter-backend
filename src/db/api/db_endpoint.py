@@ -16,7 +16,7 @@ def get_user_by_id(user_id: int):
         return user
     raise HTTPException(status_code=404, detail="User not found")
 
-@router.get("/get/users/{user_id}/data", tags=["Users"])
+@router.get("/users/{user_id}/data", tags=["Users"])
 def get_user_data(user_id: int):
     user = user_service.get_user_by_id(user_id)
     if not user:
@@ -27,11 +27,10 @@ def get_user_data(user_id: int):
     raise HTTPException(status_code=404, detail="User data not found")
 
 @router.post("/users/{user_id}/data", tags=["Users"])
-def update_user_data(new_data: UserUpdateData):
-    user = user_service.get_user_by_id(new_data.user_id)
-    if not user:
+def update_user_data(user_id: int, new_data: UserUpdateData):
+    if not user_id:
         raise HTTPException(status_code=404, detail="User not found")
-    success = user_service.update_user_data(new_data.user_id, new_data.data)
+    success = user_service.update_user_data(user_id, new_data.data)
     if success:
         return {"message": "User data updated successfully"}
     raise HTTPException(status_code=400, detail="Failed to update data")

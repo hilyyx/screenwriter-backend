@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from lib.models.schemas import Params
+from lib.models.schemas import Params, Graph
 from lib.llm.generator import DialogGenerator
 from fastapi import HTTPException
 
@@ -23,4 +23,3 @@ def generate(params: Params):
         return a
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Dialogue generation error: {str(e)}")
-
