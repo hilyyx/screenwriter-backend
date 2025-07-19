@@ -1,7 +1,10 @@
-import bcrypt
+import os
+from datetime import datetime, timedelta
+from lib.auth.utils import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
+from lib.models.schemas import UserRegisterRequest, UserLoginRequest, UserResponse
 from db.database import Database
-from lib.auth.validator import validate_password
 from db.users_db import Users
+from fastapi import HTTPException
 
 class Auth:
     def __init__(self):
@@ -9,37 +12,38 @@ class Auth:
         self.db = Users(self.db1)
 
     def register(self, mail, name, surname, password):
-        try:
-            password = validate_password(password)
-        except ValueError as e:
-            return None, ""
-
         user = self.db.get_user_by_mail(mail)
         if user:
             if user.get('is_deleted'):
-                # Реактивация пользователя
-                user_id = self.db.reactivate_user(mail, name, surname, bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))
+                # Восстановление пользователя
+                password_hash = hash_password(password)
+                user_id = self.db.reactivate_user(mail, name, surname, password_hash)
                 return user_id, None
-            return None, "User already exists"
-
-        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            raise HTTPException(400, detail="User already exists")
+        password_hash = hash_password(password)
         user_id = self.db.create_user(mail, name, surname, password_hash)
-        if user_id:
-            return user_id, None
-        return None, "Failed to create user"
+        if not user_id:
+            raise HTTPException(500, detail="Failed to create user")
+        return user_id, None
 
     def login(self, mail, password):
-        try:
-            password = validate_password(password)
-        except ValueError as e:
-            return None, str(e)
-
         user = self.db.get_user_by_mail(mail)
         if not user or user.get('is_deleted'):
-            return None, "User not found"
+            raise HTTPException(401, detail="User not found")
+        if not verify_password(password, user['password_hash']):
+            raise HTTPException(401, detail="Wrong password")
+        user_response = UserResponse(
+            id=user["id"],
+            mail=user["mail"],
+            name=user["name"],
+            surname=user["surname"]
+        )
+        access_token = create_access_token(user_response)
+        refresh_token, expires = create_refresh_token(user_response)
 
-        password_hash = user['password_hash']
-        if bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
-            return user, None
-        else:
-            return None, "Wrong password"
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "user": user_response
+        }

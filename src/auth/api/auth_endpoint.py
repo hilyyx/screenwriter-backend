@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Header
 from lib.auth.auth import Auth
 from lib.models.schemas import UserRegisterRequest, UserLoginRequest, UserResponse
+from typing import Optional
+from lib.auth.utils import decode_token, create_access_token
 
 router = APIRouter()
 
@@ -19,8 +21,26 @@ def register(user: UserRegisterRequest):
 
 @router.post("/login", tags=["Auth"])
 def login(user: UserLoginRequest):
-    user_data, error = auth_service.login(user.mail, user.password)
-    if error:
-        raise HTTPException(status_code=401, detail=error)
-    return UserResponse(id=user_data['id'], mail=user_data['mail'], name=user_data['name'], surname=user_data['surname'])
+    return auth_service.login(user.mail, user.password)
+
+@router.post("/refresh", tags=["Auth"])
+def refresh(refresh_token: str):
+    try:
+        payload = decode_token(refresh_token)
+        mail = payload.get("mail")
+    except Exception:
+        raise HTTPException(401, detail="Invalid refresh token")
+    new_access_token = create_access_token({"mail": mail})
+    return {"access_token": new_access_token}
+
+@router.get("/protected", tags=["Auth"])
+def protected(authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(401, detail="Missing token")
+    token = authorization.split(" ")[1]
+    try:
+        payload = decode_token(token)
+    except Exception:
+        raise HTTPException(401, detail="Invalid token")
+    return {"message": f"Hello, {payload.get('mail')}"}
 
