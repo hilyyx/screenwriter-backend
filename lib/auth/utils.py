@@ -1,15 +1,15 @@
-from typing import Union
+import os
+from datetime import datetime, timedelta
+
+import bcrypt
 import jwt
 from dotenv import load_dotenv
-import os
-import bcrypt
-from datetime import datetime, timedelta
-from jose import jwt as jose_jwt
 from jose import JWTError
+from jose import jwt as jose_jwt
+
 load_dotenv()
 
-ACCESS_EXPIRE_MINUTES = 15
-REFRESH_EXPIRE_DAYS = 7
+ACCESS_EXPIRE_MINUTES = 60
 
 # Загрузка приватного и публичного ключей из файлов
 with open(os.path.join(os.path.dirname(__file__), '../../certs/private.pem'), 'r') as f:
@@ -30,12 +30,6 @@ def create_access_token(user) -> str:
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jose_jwt.encode(to_encode, PRIVATE_KEY, algorithm=ALGORITHM)
-
-def create_refresh_token(user):
-    to_encode = user.dict() if hasattr(user, 'dict') else dict(user)
-    expire = datetime.utcnow() + timedelta(days=REFRESH_EXPIRE_DAYS)
-    to_encode.update({"exp": expire})
-    return jose_jwt.encode(to_encode, PRIVATE_KEY, algorithm=ALGORITHM), expire
 
 def encode_jwt(payload: dict,
                private_key: str = PRIVATE_KEY,

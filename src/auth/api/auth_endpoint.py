@@ -2,8 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Header
 from lib.auth.auth import Auth
 from lib.models.schemas import UserRegisterRequest, UserLoginRequest, UserResponse
 from typing import Optional
-from lib.auth.utils import decode_token, create_access_token
-
+from lib.auth.utils import decode_token
 router = APIRouter()
 
 auth_service = Auth()
@@ -22,16 +21,6 @@ def register(user: UserRegisterRequest):
 @router.post("/login", tags=["Auth"])
 def login(user: UserLoginRequest):
     return auth_service.login(user.mail, user.password)
-
-@router.post("/refresh", tags=["Auth"])
-def refresh(refresh_token: str):
-    try:
-        payload = decode_token(refresh_token)
-        mail = payload.get("mail")
-    except Exception:
-        raise HTTPException(401, detail="Invalid refresh token")
-    new_access_token = create_access_token({"mail": mail})
-    return {"access_token": new_access_token}
 
 @router.get("/protected", tags=["Auth"])
 def protected(authorization: Optional[str] = Header(None)):

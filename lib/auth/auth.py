@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from lib.auth.utils import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
+from lib.auth.utils import hash_password, verify_password, create_access_token
 from lib.models.schemas import UserResponse
 from db.database import Database
 from db.users_db import Users
@@ -39,11 +39,8 @@ class Auth:
             surname=user["surname"]
         )
         access_token = create_access_token(user_response)
-        refresh_token, expires = create_refresh_token(user_response)
-
         return {
             "access_token": access_token,
-            "refresh_token": refresh_token,
             "token_type": "bearer",
             "user": user_response
         }
