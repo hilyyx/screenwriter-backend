@@ -12,7 +12,7 @@ import json
 import copy
 import time
 
-load_dotenv()
+load_dotenv(override=True)
 
 def graph_to_JSON(dialog_graph):
     structure = {"data": []}
@@ -47,6 +47,18 @@ def get_prev_dialog_chains(dialog_graph, node):
         prev_dialog_chains.append(dialog_chain)
     return prev_dialog_chains
 
+def get_avg_metrics_rate(metrics):
+    rate_sum = 0
+    for metric in metrics.keys():
+        rate_sum += metrics[metric]["rate"]
+    return rate_sum
+
+def get_avg_multiple_metrics_rate(validation_results):
+    rate_sum = 0
+    for validation_result in validation_results:
+        for metric in validation_result.keys():
+            rate_sum += validation_result[metric]["rate"]
+    return rate_sum
 class Orchestrator:
     def __init__(self, params: dict):
         self.params = params
@@ -95,7 +107,7 @@ class DialogSettings:
         self.model_type_dialogue_validation = os.getenv("MODEL_TYPE_DIALOGUE_VALIDATION")
         self.model_type_structure_regeneration = os.getenv("MODEL_TYPE_STRUCTURE_REGENERATION")
         self.model_type_dialogue_regeneration = os.getenv("MODEL_TYPE_DIALOGUE_REGENERATION")
-        print(self.model_type_structure_generation)
+        # print(self.model_type_structure_generation)
 
         self.model_max_tokens_structure_generation = int(os.getenv("MODEL_MAX_TOKENS_STRUCTURE_GENERATION", 8192))
         self.model_max_tokens_dialogue_generation = int(os.getenv("MODEL_MAX_TOKENS_DIALOGUE_GENERATION", 8192))
@@ -518,7 +530,10 @@ class DialogRegenerator(DialogSettings):
             next_nodes = list(dialog_graph.adj[t].keys())
             if not dialog_graph.nodes[t].get("validation_result"):
                 dialog_validator.validate_node_line(dialog_graph, prev_dialog_chains, t, copy.deepcopy(list(dialog_graph.adj[t])))
-            while dialog_graph.nodes[t].get("need_regeneration", 1):
+            validation_node_cnt = 0
+            bst_node_content = dialog_graph.nodes[t]
+            bst_node_content_rate = get_avg_metrics_rate(dialog_graph.nodes[t]["validation_result"])
+            while dialog_graph.nodes[t].get("need_regeneration", 1) and validation_node_cnt < 3:
                 with open("resources/prompt_nodes_content_regeneration.txt", encoding='utf-8', mode="r") as prompt_nodes_content:
                     prompt_nodes_content = Template(prompt_nodes_content.read()).safe_substitute(
                     chain="\n = = = = \n".join(prev_dialog_chains),
@@ -548,18 +563,33 @@ class DialogRegenerator(DialogSettings):
                 )
                 dialog_graph.nodes[t]["line"] = node_content_response.choices[0].message.content.strip("\"\'")
                 dialog_validator.validate_node_line(dialog_graph, prev_dialog_chains, t, copy.deepcopy(list(dialog_graph.adj[t])))
+                if get_avg_metrics_rate(dialog_graph.nodes[t]["validation_result"]) > bst_node_content_rate:
+                    bst_node_content = dialog_graph.nodes[t]
+                    bst_node_content_rate = get_avg_metrics_rate(dialog_graph.nodes[t]["validation_result"])
+                validation_node_cnt+=1
+            dialog_graph.nodes[t] = bst_node_content
+            bst_edges_content = {}
+            bst_edges_content_rates = {} 
+            used_lines = []
             for next_node in next_nodes:
                 if dialog_graph.edges[t, next_node].get("need_regeneration", 1):
                     next_required_nodes_tematics["tematics"].append({"id": next_node, "info": dialog_graph.nodes[next_node]["info"]})
-                    if not  dialog_graph.edges[t, next_node].get("validation_result"):
+                    if not dialog_graph.edges[t, next_node].get("validation_result"):
                         dialog_validator.validate_edge_line(dialog_graph, prev_dialog_chains, (t, next_node), copy.deepcopy(list(dialog_graph.adj[t])))
                     next_required_edges_lines["lines"].append({"id": next_node, "info": dialog_graph.edges[t, next_node]["info"], "line": dialog_graph.edges[t, next_node]["line"], "mood": dialog_graph.edges[t, next_node]["mood"], "comments": dialog_graph.edges[t, next_node]["validation_result"]})
                     next_required_nodes.append(next_node)
+                    bst_edges_content_rates[next_node] = get_avg_metrics_rate(dialog_graph.edges[t, next_node]["validation_result"])
+                else:
+                    used_lines.append(dialog_graph.edges[t, next_node]["line"])
+                bst_edges_content[next_node] = dialog_graph.edges[t, next_node]
+                
                 if next_node not in q and next_node not in used:
                     q.append(next_node)
+            bst_edges_content_rate = sum(bst_edges_content_rates) / len(bst_edges_content_rates)
             for i in range(0, len(prev_dialog_chains)):
                 prev_dialog_chains[i] += f"**NPC**: {dialog_graph.nodes[t]["line"]}\n"
-            while len(next_required_nodes):
+            validation_edges_cnt = 0
+            while len(next_required_nodes) and validation_edges_cnt < 3:
                 with open("resources/prompt_edges_content.txt", encoding='utf-8', mode="r") as prompt_edges_content:
                     prompt_edges_content = Template(prompt_edges_content.read()).safe_substitute(
                     json_edge_structure=self.llm_settings.get_edge_structure(),
@@ -577,7 +607,8 @@ class DialogRegenerator(DialogSettings):
                     scene=self.params["scene"],
                     relation=self.params["hero_to_NPC_relation"],
                     replics = next_required_edges_lines,
-                    json_tematics = self.llm_settings.get_json_tematics()
+                    json_tematics = self.llm_settings.get_json_tematics(),
+                    used_lines = used_lines
                 )
                 edges_content_response = self.client.chat.completions.create(
                     model=self.model_type_dialogue_regeneration,
@@ -595,6 +626,8 @@ class DialogRegenerator(DialogSettings):
                 print(t, next_required_nodes)
                 next_required_tematics_new = {"tematics": []}
                 next_required_edges_lines_new = {"lines": []}
+                edges_content_rates = {}
+                
                 for line in edges_content:
                     for key in line.keys():
                         dialog_graph.edges[t, int(line["id"])][key] = line[key]
@@ -602,6 +635,14 @@ class DialogRegenerator(DialogSettings):
                             dialog_graph.edges[t, int(line["id"])][key] = dialog_graph.edges[t, int(line["id"])][key].strip("\"\'")
                     if dialog_validator.validate_edge_line(dialog_graph, prev_dialog_chains, (t, int(line["id"])), copy.deepcopy(list(dialog_graph.adj[t]))):
                         next_required_nodes.remove(int(line["id"]))
+                        used_lines.append(dialog_graph.edges[t, int(line["id"])]["line"])
+                    edges_content_rates[int(line["id"])] = get_avg_metrics_rate(dialog_graph.edges[t, int(line["id"])]["validation_result"])
+                if sum(edges_content_rates.items())/len(edges_content_rates) > bst_edges_content_rate:
+                    for next_node in next_nodes:
+                        bst_edges_content[next_node] = dialog_graph[t, next_node]
+                    bst_edges_content_rate = sum(edges_content_rates.items())/len(edges_content_rates)
+                with open("log.txt", mode="a", encoding="utf-8") as log:
+                    log.write(json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4) + str(edges_content_rates) + "\n\n=====\n\n" )
                 for tematic in next_required_nodes_tematics["tematics"]:
                     if tematic["id"] in next_required_nodes:
                         next_required_tematics_new["tematics"].append(tematic)
@@ -609,5 +650,7 @@ class DialogRegenerator(DialogSettings):
                     if line["id"] in next_required_nodes:
                         next_required_edges_lines_new["lines"].append(line)
                 next_required_nodes_tematics = next_required_tematics_new
-
+                validation_edges_cnt += 1
+            for next_node in bst_edges_content.keys():
+                dialog_graph.edges[t, next_node] = bst_edges_content[next_node]
         return dialog_graph
