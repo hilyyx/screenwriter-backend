@@ -134,7 +134,7 @@ openssl rsa -in certs/private.pem -pubout -out certs/public.pem
 5. Запусти сервер разработки:
 
 ```bash
-poetry run uvicorn src.app:app --reload
+uvicorn src.main:app --host 0.0.0.0 --port 8005
 ```
 
 ---
