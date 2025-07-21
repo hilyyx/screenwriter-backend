@@ -644,7 +644,8 @@ class DialogRegenerator(DialogSettings):
                     relation=self.params["hero_to_NPC_relation"],
                     replics = next_required_edges_lines,
                     json_tematics = self.llm_settings.get_json_tematics(),
-                    used_lines = used_lines
+                    used_lines = used_lines,
+                    json_edge_regeneration_structure = self.llm_settings.get_regen_edge_structure()
                 )
                 with open("prompt_edges_content_regen_res.txt", mode = "w", encoding="utf-8") as file:
                     file.write(prompt_edges_content)
@@ -673,7 +674,7 @@ class DialogRegenerator(DialogSettings):
                             dialog_graph.edges[t, int(line["id"])][key] = dialog_graph.edges[t, int(line["id"])][key].strip("\"\'")
                     if dialog_validator.validate_edge_line(dialog_graph, prev_dialog_chains, (t, int(line["id"])), copy.deepcopy(list(dialog_graph.adj[t]))):
                         next_required_nodes.remove(int(line["id"]))
-                        used_lines.append(dialog_graph.edges[t, int(line["id"])]["line"])
+                        used_lines.append(dialog_graph.edges[t, int(line["id"])]["line"])   
                     edges_content_rates[int(line["id"])] = get_avg_metrics_rate(dialog_graph.edges[t, int(line["id"])]["validation_result"])
                 print(edges_content_rates)
                 if len(edges_content_rates) and sum(edges_content_rates.values())/len(edges_content_rates) > bst_edges_content_rate:
