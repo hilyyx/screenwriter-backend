@@ -36,8 +36,8 @@ def generate(params: Params, user_id: int = Depends(get_current_user_id)):
     if isinstance(user_data, str):
         user_data = json.loads(user_data)
 
-    game_id = str(params.games_id)
-    scene_id = str(params.scenes_id)
+    game_id = params.games_id
+    scene_id = params.scenes_id
     script_id = None
     for game in user_data.get("games", []):
         if str(game.get("id")) == game_id:

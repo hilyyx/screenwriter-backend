@@ -34,8 +34,8 @@ class Params(BaseModel):
     extra: str
     context: str
     goals: List[GoalParams]
-    games_id: int
-    scenes_id: int
+    games_id: str
+    scenes_id: str
 
 #-------ПЕРЕГЕНЕРАЦИЯ-----------#
 class Graph:
