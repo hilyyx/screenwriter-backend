@@ -17,6 +17,7 @@ logging.basicConfig(
     filemode='a'
 )
 
+
 class Database:
     def __init__(self):
         self.dbres = os.getenv('DATABASE_URL')
