@@ -1,6 +1,9 @@
-from pydantic import BaseModel, EmailStr
-from typing import List, Dict, Any
+from typing import List, Dict
 
+from pydantic import BaseModel
+
+
+#-------СОЗДАНИЕ ПАРАМЕТРОВ ИГРЫ-----------#
 class GlobalParams(BaseModel):
     name: str
     profession: str
@@ -13,21 +16,6 @@ class GoalParams(BaseModel):
     type: str
     object: str
     condition: str
-
-class Dialogue(BaseModel):
-    id: str
-    info: str
-    line: str
-
-class DialogueData(BaseModel):
-    id: str
-    line: str
-    to: Dialogue
-
-class DialogueResponse(BaseModel):
-    id: str
-    name: str
-    data: List[DialogueData]
 
 class Params(BaseModel):
     npc: GlobalParams
@@ -47,8 +35,33 @@ class Params(BaseModel):
     context: str
     goals: List[GoalParams]
 
+class ParamsRegen(BaseModel):
+    npc: GlobalParams
+    hero: GlobalParams
+    world_settings: str
+    NPC_to_hero_relation: str
+    hero_to_NPC_relation: str
+    mx_answers_cnt: int
+    mn_answers_cnt: int
+    mx_depth: int
+    mn_depth: int
+    scene: str
+    genre: str
+    epoch: str
+    tonality: str
+    extra: str
+    context: str
+    goals: List[GoalParams]
+    prompt: str
+    dialog_structure: str
+    node_id: int
+
+#-------ПЕРЕГЕНЕРАЦИЯ-----------#
+class Graph:
+    pass
+#-------РЕГИСТРАЦИЯ И ВХОД-----------#
 class UserRegisterRequest(BaseModel):
-    mail: EmailStr
+    mail: str
     name: str
     surname: str
     password: str
@@ -62,3 +75,15 @@ class UserResponse(BaseModel):
     mail: str
     name: str
     surname: str
+
+
+#-------РУЧКИ ДЛЯ БД-----------#
+class UserUpdateName(BaseModel):
+    name: str
+    surname: str
+
+class UserUpdatePassword(BaseModel):
+    password_hash: str
+
+class UserUpdateData(BaseModel):
+    data: Dict
