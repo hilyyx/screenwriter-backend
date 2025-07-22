@@ -2,7 +2,7 @@ import logging
 import os
 
 # Путь до лог-файла
-log_dir = "logs"
+log_dir = "certs"
 log_file = os.path.join(log_dir, "db.log")
 
 # Убедимся, что директория существует
