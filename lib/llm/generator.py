@@ -40,13 +40,16 @@ def get_prev_dialog_chains(dialog_graph, node):
     # print(node)
     for path in paths:
         dialog_chain = "*Начало диалога*\n"
-        if len(path) < 2 or not dialog_graph.edges[path[-2], path[-1]].get("line"):
-            continue
+        full = 1
         for ind in range(0, len(path)-1):
             # print(path[ind], dialog_graph.nodes[path[ind]], dialog_graph.edges[path[ind], path[ind+1]])
+            if not dialog_graph.nodes[path[ind]].get("line") or not dialog_graph.edges[path[ind], path[ind+1]].get("line"):
+                full = 0
+                break
             dialog_chain += f"**NPC**: {dialog_graph.nodes[path[ind]]["line"]}\n"
             dialog_chain += f"**Игрок**: {dialog_graph.edges[path[ind], path[ind+1]]["line"]}\n"
-        prev_dialog_chains.append(dialog_chain)
+        if full:
+            prev_dialog_chains.append(dialog_chain)
     return prev_dialog_chains
 
 def get_avg_metrics_rate(metrics):
@@ -57,7 +60,7 @@ def get_avg_metrics_rate(metrics):
         rate_mn = min(rate_mn, metrics[metric]["rate"])
     if len(metrics):
         rate_avg = rate_sum / len(metrics)
-        return 2 * (rate_avg + rate_mn) / (rate_avg * rate_mn)
+        return 2 * (rate_avg * rate_mn) / (rate_avg + rate_mn)
     return 0
 
 class Orchestrator:
@@ -78,11 +81,11 @@ class Orchestrator:
         start_time = time.time()
         dialog_graph = JSON_to_graph(dialog_generator.generate_structure())
         print("--Структура до валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
-        with open("structure_before_validation.txt", mode = "w", encoding="utf-8") as file:
-            json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
+        # with open("structure_before_validation.txt", mode = "w", encoding="utf-8") as file:
+        #     json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         structure_validation = dialog_validator.validate_structure(dialog_graph)
-        with open("structure_validation.txt", mode = "w", encoding="utf-8") as file:
-            file.write(str(structure_validation))
+        # with open("structure_validation.txt", mode = "w", encoding="utf-8") as file:
+        #     file.write(str(structure_validation))
         print("--Оценка валидации--", structure_validation, sep = "\n", end = "\n\n=====\n\n")
         validation_cnt = 0
         while not structure_validation[0] and validation_cnt < 3:
@@ -94,22 +97,22 @@ class Orchestrator:
             print("--Оценка валидации--", structure_validation, sep = "\n", end = "\n\n=====\n\n")
             validation_cnt += 1
         print("--Структура после валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
-        with open("structure_after_validation.txt", mode = "w", encoding="utf-8") as file:
-            json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
+        # with open("structure_after_validation.txt", mode = "w", encoding="utf-8") as file:
+        #     json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         dialog_generator.generate_content(dialog_graph)   
         print("--Контент до валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
-        with open("content_before_validation.txt", mode = "w", encoding="utf-8") as file:
-            json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
+        # with open("content_before_validation.txt", mode = "w", encoding="utf-8") as file:
+        #     json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         dialog_validator.validate_content(dialog_graph)
         print("--Контент после валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
         with open("content_after_validation.txt", mode = "w", encoding="utf-8") as file:
             json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         dialog_regenerator.regenerate_content(dialog_validator, dialog_graph)
         print("--Контент после перегенерации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
-        with open("dialogue.txt", mode = "w", encoding="utf-8") as file:
-            json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
-        return json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False) 
-    def insertSubtree(self, dialog_graph, structure_part, node_id):
+        # with open("dialogue.txt", mode = "w", encoding="utf-8") as file:
+        #     json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
+        return graph_to_JSON(dialog_graph)
+    def insert_subtree(self, dialog_graph, structure_part, node_id):
         structure_part = structure_part["data"]
         prev_edges = []
         for prev_node_id in list(dialog_graph.predecessors(node_id)):
@@ -129,23 +132,26 @@ class Orchestrator:
         return structure_part[0]["id"] + mx_node_id
     def regenerate_dialog(self, dialog_structure, node_id, prompt):
         params = self.params
+        dialog_graph = JSON_to_graph(json.loads(dialog_structure))
+        shortest_path = len(nx.shortest_path(dialog_graph, source=list(dialog_graph.nodes)[0]))
         params["context"] = prompt
-        params["mn_depth"] = 0
+        params["mn_depth"] = max(0, params["mn_depth"] - shortest_path)
+        params["mx_depth"] = params["mx_depth"] - shortest_path
         dialog_generator = DialogGenerator(params) 
         dialog_validator = DialogValidator(params)
         dialog_regenerator = DialogRegenerator(params)
-        dialog_graph = JSON_to_graph(json.loads(dialog_structure))
+        
         start_time = time.time()
         prev_dialog_chains = get_prev_dialog_chains(dialog_graph, node_id)
         structure_part = dialog_generator.generate_structure(prev_dialog_chains)
-        node_id = self.insertSubtree(dialog_graph, structure_part, node_id)
+        node_id = self.insert_subtree(dialog_graph, structure_part, node_id)
         # print("--Структура до валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
         structure_validation = dialog_validator.validate_structure(dialog_graph)
         validation_cnt = 0
         print("--Оценка валидации--", structure_validation, sep = "\n", end = "\n\n=====\n\n")
         while not structure_validation[0] and validation_cnt < 3:
             structure_part = dialog_regenerator.regenerate_structure(JSON_to_graph(structure_part), structure_validation[1], prev_dialog_chains)
-            node_id = self.insertSubtree(dialog_graph, structure_part, node_id)
+            node_id = self.insert_subtree(dialog_graph, structure_part, node_id)
             print("--Структура в процессе валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), sep = "\n", end = "\n\n=====\n\n")
             structure_validation = dialog_validator.validate_structure(dialog_graph)
             print("--Оценка валидации--", structure_validation, sep = "\n", end = "\n\n=====\n\n")
@@ -160,7 +166,7 @@ class Orchestrator:
         print("--Контент после перегенерации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
         with open("dialogue.txt", mode = "w", encoding="utf-8") as file:
             json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
-        return json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False) 
+        return graph_to_JSON(dialog_graph)
 class DialogSettings:
     def __init__(self, params: dict):
 
@@ -284,11 +290,11 @@ class DialogGenerator(DialogSettings):
                 max_tokens=self.model_max_tokens_dialogue_generation 
             )
             
-            dialog_graph.nodes[t]["line"] = node_content_response.choices[0].message.content.strip("\"\'")
+            dialog_graph.nodes[t]["line"] = node_content_response.choices[0].message.content.strip("\"\'").replace("\n", "")
             for i in range(0, len(prev_dialog_chains)):
                 prev_dialog_chains[i] += f'**NPC**: {dialog_graph.nodes[t]["line"]}\n'
             with open("resources/prompt_edges_content.txt", encoding='utf-8', mode="r") as prompt:
-                prompt_edges_content = Template(prompt.read()).substitute(
+                prompt_edges_contents = Template(prompt.read()).substitute(
                     json_edge_structure=self.llm_settings.get_edge_structure(),
                     chain="\n = = = = \n".join(prev_dialog_chains),
                     tematics=next_tematics,
@@ -307,11 +313,11 @@ class DialogGenerator(DialogSettings):
                     json_tematics = self.llm_settings.get_json_tematics()
                 )
             if len(next_nodes):
-                edges_content_response = self.client.chat.completions.create(
+                edges_contents_response = self.client.chat.completions.create(
                     model=self.model_type_dialogue_generation,
                     messages=[
                         {"role": "system", "content": self.llm_settings.get_system_prompt()},
-                        {"role": "user", "content": prompt_edges_content},
+                        {"role": "user", "content": prompt_edges_contents},
                     ],
                     stream=False,
                     response_format={
@@ -319,15 +325,15 @@ class DialogGenerator(DialogSettings):
                     },
                     max_tokens=self.model_max_tokens_dialogue_generation
                 )
-                edges_content = json.loads(edges_content_response.choices[0].message.content)["lines"]
-                print(f"{t}. Q: {dialog_graph.nodes[t]["line"]}, A: {edges_content}")
+                edges_contents = json.loads(edges_contents_response.choices[0].message.content)["lines"]
+                print(f"{t}. Q: {dialog_graph.nodes[t]["line"]}, A: {edges_contents}")
                 # print("--answers--")
-                # print(edges_content)
-                for line in edges_content:
+                # print(edges_contents)
+                for line in edges_contents:
                     for key in line.keys():
                         dialog_graph.edges[t, int(line["id"])][key] = line[key]
                         if type(line[key]) == str:
-                            dialog_graph.edges[t, int(line["id"])][key] = dialog_graph.edges[t, int(line["id"])][key].strip("\"\'")
+                            dialog_graph.edges[t, int(line["id"])][key] = dialog_graph.edges[t, int(line["id"])][key].strip("\"\'").replace("\n", "")
 
         return dialog_graph
 class DialogValidator(DialogSettings):
@@ -392,8 +398,8 @@ class DialogValidator(DialogSettings):
         self.validate_nodes_type(dialog_graph)
         return dialog_graph
     def validate_structure_llm(self, structure):
-        with open("resources/prompt_structure_validation.txt", encoding = 'utf-8', mode= "r") as prompt_edges_content:
-            prompt_structure_validation = Template(prompt_edges_content.read()).substitute(
+        with open("resources/prompt_structure_validation.txt", encoding = 'utf-8', mode= "r") as prompt_structure_validation:
+            prompt_structure_validation = Template(prompt_structure_validation.read()).substitute(
                 json_structure=self.llm_settings.get_structure(),
                 json_node_structure=self.llm_settings.get_node_structure(),
                 NPC_name=self.npc["name"],
@@ -582,7 +588,26 @@ class DialogRegenerator(DialogSettings):
 
         structure = json.loads(structure_response.choices[0].message.content)
         return structure
-    
+    def upd_edges_contents(self, dialog_graph, node_id, edges_contents, next_required_nodes = [], next_required_nodes_tematics = {"tematics": []}, next_required_edges_contents = {"lines": []}, used_lines = []):
+        print(edges_contents)
+        for content in edges_contents:
+            for key in content.keys():
+                dialog_graph.edges[node_id, int(content["id"])][key] = content[key]
+                if type(content[key]) == str:
+                    dialog_graph.edges[node_id, int(content["id"])][key] = dialog_graph.edges[node_id, int(content["id"])][key].strip("\"\'").replace("\n", "")
+            if not content.get("need_regeneration") and int(content.get("id")) in next_required_nodes:
+                next_required_nodes.remove(int(content["id"]))
+                used_lines.append(dialog_graph.edges[node_id, int(content["id"])]["line"])
+        next_required_nodes_tematics_new = {"tematics": []}
+        next_required_edges_contents_new = {"lines": []}
+        for tematic in next_required_nodes_tematics["tematics"]:
+            if tematic["id"] in next_required_nodes:
+                next_required_nodes_tematics_new["tematics"].append(tematic)
+        for line in next_required_edges_contents["lines"]:
+            if line["id"] in next_required_nodes:
+                next_required_edges_contents_new["lines"].append(line)
+        next_required_nodes_tematics = next_required_nodes_tematics_new
+        next_required_edges_contents = next_required_edges_contents_new
     def regenerate_content(self, dialog_validator, dialog_graph, start_node = None):
         q = deque()
         if start_node is None:
@@ -593,7 +618,7 @@ class DialogRegenerator(DialogSettings):
             t = q.popleft()
             used.append(t)
             next_required_nodes_tematics = {"tematics": []}
-            next_required_edges_lines = {"lines": []}
+            next_required_edges_contents = {"lines": []}
             next_required_nodes = []
             prev_dialog_chains = get_prev_dialog_chains(dialog_graph, t)
             next_nodes = list(dialog_graph.adj[t].keys())
@@ -647,7 +672,7 @@ class DialogRegenerator(DialogSettings):
                     next_required_nodes_tematics["tematics"].append({"id": next_node, "info": dialog_graph.nodes[next_node]["info"]})
                     if not dialog_graph.edges[t, next_node].get("validation_result"):
                         dialog_validator.validate_edge_line(dialog_graph, prev_dialog_chains, (t, next_node), copy.deepcopy(list(dialog_graph.adj[t])))
-                    next_required_edges_lines["lines"].append({"id": next_node, "info": dialog_graph.edges[t, next_node]["info"], "line": dialog_graph.edges[t, next_node]["line"], "mood": dialog_graph.edges[t, next_node]["mood"], "comments": dialog_graph.edges[t, next_node]["validation_result"]})
+                    next_required_edges_contents["lines"].append({"id": next_node, "info": dialog_graph.edges[t, next_node]["info"], "line": dialog_graph.edges[t, next_node]["line"], "mood": dialog_graph.edges[t, next_node]["mood"], "comments": dialog_graph.edges[t, next_node]["validation_result"]})
                     next_required_nodes.append(next_node)
                     bst_edges_content_rate += get_avg_metrics_rate(dialog_graph.edges[t, next_node]["validation_result"])
                 else:
@@ -661,9 +686,10 @@ class DialogRegenerator(DialogSettings):
             for i in range(0, len(prev_dialog_chains)):
                 prev_dialog_chains[i] += f"**NPC**: {dialog_graph.nodes[t]["line"]}\n"
             validation_edges_cnt = 0
+            bst_edges_contents = next_required_edges_contents["lines"]
             while len(next_required_nodes) and validation_edges_cnt < 3:
-                with open("resources/prompt_edges_content.txt", encoding='utf-8', mode="r") as prompt_edges_content:
-                    prompt_edges_content = Template(prompt_edges_content.read()).substitute(
+                with open("resources/prompt_edges_content_regeneration.txt", encoding='utf-8', mode="r") as prompt_edges_contents:
+                    prompt_edges_contents = Template(prompt_edges_contents.read()).substitute(
                     json_edge_structure=self.llm_settings.get_edge_structure(),
                     chain="\n = = = = \n".join(prev_dialog_chains),
                     tematics=next_required_nodes_tematics,
@@ -678,16 +704,16 @@ class DialogRegenerator(DialogSettings):
                     extra=self.params["extra"],
                     scene=self.params["scene"],
                     relation=self.params["hero_to_NPC_relation"],
-                    replics = next_required_edges_lines,
+                    replics = next_required_edges_contents,
                     json_tematics = self.llm_settings.get_json_tematics(),
                     used_lines = used_lines,
                     json_edge_regeneration_structure = self.llm_settings.get_regen_edge_structure()
                 )
-                edges_content_response = self.client.chat.completions.create(
+                edges_contents_response = self.client.chat.completions.create(
                     model=self.model_type_dialogue_regeneration,
                     messages=[
                         {"role": "system", "content": self.llm_settings.get_system_prompt()},
-                        {"role": "user", "content": prompt_edges_content},
+                        {"role": "user", "content": prompt_edges_contents},
                     ],
                     stream=False,
                     response_format={
@@ -695,33 +721,20 @@ class DialogRegenerator(DialogSettings):
                     },
                     max_tokens=self.model_max_tokens_dialogue_regeneration
                 )
-                edges_content = json.loads(edges_content_response.choices[0].message.content)["lines"]
+                edges_contents = json.loads(edges_contents_response.choices[0].message.content)["lines"]
+                print(edges_contents)
                 edges_content_rate = 0
-                for content in edges_content:
+                for content in edges_contents:
                     edge_validation_result = dialog_validator.interpret_rate(dialog_validator.validate_content_llm(content["line"].strip("\"\'"), prev_dialog_chains, self.hero, "главный герой"))
                     content["need_regeneration"] = edge_validation_result[0]
                     content["validation_result"] = edge_validation_result[1]
                     edges_content_rate += get_avg_metrics_rate(edge_validation_result[1])
-                edges_content_rate /= len(edges_content)
-                print(t, next_required_edges_lines)
+                edges_content_rate /= len(edges_contents)
+                self.upd_edges_contents(dialog_graph, t, edges_contents, next_required_nodes, next_required_nodes_tematics, next_required_edges_contents, used_lines)
+                print(t, next_required_edges_contents)
                 if edges_content_rate > bst_edges_content_rate:
-                    for content in edges_content:
-                        for key in content.keys():
-                            dialog_graph.edges[t, int(content["id"])][key] = content[key]
-                            if type(content[key]) == str:
-                                dialog_graph.edges[t, int(content["id"])][key] = dialog_graph.edges[t, int(content["id"])][key].strip("\"\'")
-                        if dialog_validator.validate_edge_line(dialog_graph, prev_dialog_chains, (t, int(content["id"])), copy.deepcopy(list(dialog_graph.adj[t]))):
-                            next_required_nodes.remove(int(content["id"]))
-                            used_lines.append(dialog_graph.edges[t, int(content["id"])]["line"])
                     bst_edges_content_rate = edges_content_rate
-                    next_required_nodes_tematics_new = {"tematics": []}
-                    next_required_edges_lines_new = {"lines": []}
-                    for tematic in next_required_nodes_tematics["tematics"]:
-                        if tematic["id"] in next_required_nodes:
-                            next_required_nodes_tematics_new["tematics"].append(tematic)
-                    for line in next_required_edges_lines["lines"]:
-                        if line["id"] in next_required_nodes:
-                            next_required_edges_lines_new["lines"].append(line)
-                    next_required_nodes_tematics = next_required_nodes_tematics_new
+                    bst_edges_contents = edges_contents
                 validation_edges_cnt += 1
+            self.upd_edges_contents(dialog_graph, t, bst_edges_contents)
         return dialog_graph
