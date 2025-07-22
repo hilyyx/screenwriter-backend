@@ -14,7 +14,7 @@ class Users:
             return None
         if data is None:
             data = {
-                "games": [],
+                "games": [""],
                 "selectedGameId": None,
                 "selectedSceneId": None,
                 "selectedScriptId": None,
@@ -132,7 +132,7 @@ class Users:
         try:
             if data is None:
                 data = {
-                    "games": [],
+                    "games": [""],
                     "selectedGameId": None,
                     "selectedSceneId": None,
                     "selectedScriptId": None,
