@@ -65,3 +65,4 @@ def generate(params: Params, user_id: int = Depends(get_current_user_id)):
     if not success:
         raise HTTPException(status_code=500, detail="Failed to update user data")
     return {"ok": True}
+
