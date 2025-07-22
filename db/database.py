@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 
 load_dotenv()
@@ -18,6 +19,7 @@ logging.basicConfig(
 
 class Database:
     def __init__(self):
+        self.dbres = os.getenv('DATABASE_URL')
         self.dbname = os.getenv('DB_NAME')
         self.user = os.getenv('DB_USER')
         self.password = os.getenv('DB_PASSWORD')
@@ -25,12 +27,13 @@ class Database:
         self.port = int(os.getenv('DB_PORT'))
 
         try:
+            self.db_params = urlparse(self.dbres)
             self.conn = psycopg2.connect(
-                dbname=self.dbname,
-                user=self.user,
-                password=self.password,
-                host=self.host,
-                port=self.port
+                dbname=self.db_params.path[1:],  # Убираем первый символ '/'
+                user=self.db_params.username,
+                password=self.db_params.password,
+                host=self.db_params.hostname,
+                port=self.db_params.port
             )
             self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
             logging.info(f"Connection to the database is successful: {self.host}:{self.port}/{self.dbname}")
