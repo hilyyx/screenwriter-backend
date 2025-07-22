@@ -36,17 +36,29 @@ def generate(params: Params, user_id: int = Depends(get_current_user_id)):
     if isinstance(user_data, str):
         user_data = json.loads(user_data)
 
-    game_id = params.games_id
-    scene_id = params.scenes_id
-    script_id = None
+    game_id = params.game_id
+    scene_id = params.scene_id
+    script_id = params.script_id
+    if script_id is None:
+        raise HTTPException(status_code=400, detail="script_id должен быть передан в params или я в чем-то ошибся, анлак")
+
+    # Поиск по структуре
     for game in user_data.get("games", []):
-        if str(game.get("id")) == game_id:
+        if str(game.get("id")) == str(game_id):
             for scene in game.get("scenes", []):
                 if scene.get("id") == scene_id:
-                    # Добавляем/заменяем script
                     if "scripts" not in scene:
                         scene["scripts"] = []
-                    scene["scripts"].append(a_dict)
+
+                    found = False
+                    for script in scene["scripts"]:
+                        if str(script.get("id")) == str(script_id):
+                            script["result"] = a_dict
+                            found = True
+                            break
+                    if not found:
+                        new_script = {"id": script_id, "result": a_dict}
+                        scene["scripts"].append(new_script)
                     break
             break
     success = user_service.update_user_data(user_id, user_data)
