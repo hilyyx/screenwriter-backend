@@ -23,7 +23,6 @@ def get_current_user_id(authorization: str = Header(...)):
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-
 @router.get("/users/me", tags=["Users"])
 def get_user_by_id(user_id: int = Depends(get_current_user_id)):
     user = user_service.get_user_by_id(user_id)

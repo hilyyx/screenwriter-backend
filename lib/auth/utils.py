@@ -11,11 +11,8 @@ load_dotenv()
 
 ACCESS_EXPIRE_MINUTES = 60
 
-# Загрузка приватного и публичного ключей из файлов
-with open(os.path.join(os.path.dirname(__file__), '../../certs/private.pem'), 'r') as f:
-    PRIVATE_KEY = f.read()
-with open(os.path.join(os.path.dirname(__file__), '../../certs/public.pem'), 'r') as f:
-    PUBLIC_KEY = f.read()
+PRIVATE_KEY = os.getenv("PRIVATE_SECRET_KEY").replace("\\n", "\n")
+PUBLIC_KEY = os.getenv("PUBLIC_SECRET_KEY").replace("\\n", "\n")
 
 ALGORITHM = os.getenv("ALGORITHM")
 
