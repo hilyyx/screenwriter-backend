@@ -17,9 +17,7 @@ dialogue_controller = DialogueController()
 
 @router.post("/generate", tags=["Dialogue"])
 def generate(params: Params):
-    try:
-        a = dialogue_controller.generate(params)
-        print(a)
-        return a
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Dialogue generation error: {str(e)}")
+    a = dialogue_controller.generate(params)
+    print(a)
+
+    return a
