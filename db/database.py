@@ -29,11 +29,8 @@ class Database:
         try:
             self.db_params = urlparse(self.dbres)
             self.conn = psycopg2.connect(
-                dbname=self.db_params.path[1:],  # Убираем первый символ '/'
-                user=self.db_params.username,
-                password=self.db_params.password,
-                host=self.db_params.hostname,
-                port=self.db_params.port
+                self.dbres,
+                sslmode = "require"
             )
             self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
             logging.info(f"Connection to the database is successful: {self.host}:{self.port}/{self.dbname}")
