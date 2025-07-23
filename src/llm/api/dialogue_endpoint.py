@@ -23,9 +23,9 @@ dialogue_controller = DialogueController()
 
 @router.post("/generate", tags=["Dialogue"])
 def generate(params: Params, user_id: int = Depends(get_current_user_id)):
-    # a = dialogue_controller.generate(params)
-    a = {"x": 1}
-    time.sleep(5)
+    a = dialogue_controller.generate(params)
+    # a = {"x": 1}
+    # time.sleep(5)
     # try:
     #     a_dict = json.loads(a)
     # except Exception:
@@ -75,7 +75,7 @@ def generate(params: Params, user_id: int = Depends(get_current_user_id)):
                     for script_index in range(len(scene.get("scripts", []))):
                         script = scene["scripts"][script_index]
                         if str(script.get("id")) == str(script_id):
-                            user_data["games"][game_index]["scenes"][scene_index]["scripts"][script_index] = a
+                            user_data["games"][game_index]["scenes"][scene_index]["scripts"][script_index]["result"] = a
                             found = 1
                             break
                     if not found:
