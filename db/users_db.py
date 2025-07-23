@@ -2,7 +2,7 @@ from pydantic import EmailStr
 
 from db.database import Database
 from db.logging import logger
-import json
+import json 
 
 class Users:
     def __init__(self, db: Database):
@@ -63,7 +63,7 @@ class Users:
             self.db.cursor.execute("SELECT * FROM users WHERE id = %s;", (user_id,))
             user = self.db.cursor.fetchone()
             logger.info(f"Received user by id: {user_id}")
-            if user and user.get('is_deleted'):
+            if not user and user.get('is_deleted'):
                 return None
             return user
         except Exception as e:
@@ -90,6 +90,7 @@ class Users:
         except Exception as e:
             logger.error(f"Error updating data for user {user_id}: {e}")
             self.db.conn.rollback()
+            return False 
 
     def update_user_name(self, user_id: int, new_name: str, new_surname: str):
         try:
