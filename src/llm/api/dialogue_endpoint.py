@@ -5,7 +5,7 @@ from db.database import Database
 from db.users_db import Users
 from src.db.api.db_endpoint import get_current_user_id
 import json 
-
+import time
 router = APIRouter()
 
 db = Database()
@@ -25,6 +25,7 @@ dialogue_controller = DialogueController()
 def generate(params: Params, user_id: int = Depends(get_current_user_id)):
     # a = dialogue_controller.generate(params)
     a = {"x": 1}
+    time.sleep(5)
     # try:
     #     a_dict = json.loads(a)
     # except Exception:
