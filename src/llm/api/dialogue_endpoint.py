@@ -1,9 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Header, HTTPException
 from lib.models.schemas import Params
 from lib.llm.generator import Orchestrator
-from fastapi import HTTPException
+from db.database import Database
+from db.users_db import Users
+from src.db.api.db_endpoint import get_current_user_id
+import json 
 
 router = APIRouter()
+
+db = Database()
+user_service = Users(db)
 
 class DialogueController:
     def __init__(self):
