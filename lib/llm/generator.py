@@ -79,6 +79,7 @@ class Orchestrator:
         dialog_validator = DialogValidator(self.params)
         dialog_regenerator = DialogRegenerator(self.params)
         start_time = time.time()
+        print("--Начало генерации--")
         dialog_graph = JSON_to_graph(dialog_generator.generate_structure())
         print("--Структура до валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
         with open("structure_before_validation.txt", mode = "w", encoding="utf-8") as file:
