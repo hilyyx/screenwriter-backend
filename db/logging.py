@@ -1,6 +1,6 @@
 import logging
 import os
-
+import sys
 # Путь до лог-файла
 log_dir = "certs"
 log_file = os.path.join(log_dir, "db.log")
@@ -18,3 +18,5 @@ logging.basicConfig(
 
 
 logger = logging.getLogger("screenwriter")
+
+sys.stdout.flush()

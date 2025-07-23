@@ -111,7 +111,7 @@ class Orchestrator:
         print("--Контент после перегенерации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
         with open("dialogue.txt", mode = "w", encoding="utf-8") as file:
             json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
-        return json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False)
+        return graph_to_JSON(dialog_graph)
 
 class DialogSettings:
     def __init__(self, params: dict):
