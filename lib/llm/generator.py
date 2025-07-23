@@ -79,15 +79,15 @@ class Orchestrator:
         dialog_validator = DialogValidator(self.params)
         dialog_regenerator = DialogRegenerator(self.params)
         start_time = time.time()
-        print("--Начало генерации--")
+        print("--Начало генерации--", flush=True)
         dialog_graph = JSON_to_graph(dialog_generator.generate_structure())
-        print("--Структура до валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
+        print("--Структура до валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n", flush=True)
         with open("structure_before_validation.txt", mode = "w", encoding="utf-8") as file:
             json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         structure_validation = dialog_validator.validate_structure(dialog_graph)
         with open("structure_validation.txt", mode = "w", encoding="utf-8") as file:
             file.write(str(structure_validation))
-        print("--Оценка валидации--", structure_validation, sep = "\n", end = "\n\n=====\n\n")
+        print("--Оценка валидации--", structure_validation, sep = "\n", end = "\n\n=====\n\n", flush=True)
         validation_cnt = 0
         while not structure_validation[0] and validation_cnt < 3:
             dialog_graph = JSON_to_graph(dialog_regenerator.regenerate_structure(dialog_graph, structure_validation[1]))
@@ -97,19 +97,19 @@ class Orchestrator:
                 file.write(str(structure_validation))
             print("--Оценка валидации--", structure_validation, sep = "\n", end = "\n\n=====\n\n")
             validation_cnt += 1
-        print("--Структура после валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
+        print("--Структура после валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n", flush=True)
         with open("structure_after_validation.txt", mode = "w", encoding="utf-8") as file:
             json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         dialog_generator.generate_content(dialog_graph)   
-        print("--Контент до валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
+        print("--Контент до валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n", flush=True)
         with open("content_before_validation.txt", mode = "w", encoding="utf-8") as file:
             json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         dialog_validator.validate_content(dialog_graph)
-        print("--Контент после валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
+        print("--Контент после валидации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n", flush=True)
         with open("content_after_validation.txt", mode = "w", encoding="utf-8") as file:
             json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         dialog_regenerator.regenerate_content(dialog_validator, dialog_graph)
-        print("--Контент после перегенерации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n")
+        print("--Контент после перегенерации--", json.dumps(graph_to_JSON(dialog_graph), ensure_ascii=False, indent=4), f"Время с начала выполнения программы: {time.time() - start_time}", sep = "\n", end = "\n\n=====\n\n", flush=True)
         with open("dialogue.txt", mode = "w", encoding="utf-8") as file:
             json.dump(graph_to_JSON(dialog_graph), file, ensure_ascii=False, indent=4)
         return graph_to_JSON(dialog_graph)
