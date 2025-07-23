@@ -49,9 +49,7 @@ def update_user_data(new_data: UserUpdateData, user_id: int = Depends(get_curren
         for scene_index in range(len(game.get("scenes", []))):
             scene = game["scenes"][scene_index]
             for script_index in range(len(scene.get("scripts", []))):
-                script_result = scene["scripts"][script_index]["result"]
-                if not script_result and user_data.get("games", {}).get(game_index, {}).get("scenes", {}).get(scene_index, {}).get("scripts", {}).get(script_index, {}).get("result", {}):
-                    new_data.data["games"][game_index]["scenes"][scene_index]["scripts"][script_index]["result"] = user_data["games"][game_index]["scenes"][scene_index]["scripts"][script_index]["result"]
+                new_data.data["games"][game_index]["scenes"][scene_index]["scripts"][script_index]["result"] = user_data["games"][game_index]["scenes"][scene_index]["scripts"][script_index]["result"]
 
     user = user_service.get_user_by_id(user_id)
     if not user:
