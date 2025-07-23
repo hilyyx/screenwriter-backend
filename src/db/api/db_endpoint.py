@@ -45,7 +45,7 @@ def update_user_data(new_data: UserUpdateData, user_id: int = Depends(get_curren
     print(321)
     user_data = user_service.get_user_data(user_id)
     for game_index in range(len(new_data.data.get("games", []))):
-        game = new_data["games"][game_index]
+        game = new_data.data["games"][game_index]
         for scene_index in range(len(game.get("scenes", []))):
             scene = game["scenes"][scene_index]
             for script_index in range(len(scene.get("scripts", []))):
